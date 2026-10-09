@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import type { Article } from "../types";
 
 function formatTime(dateStr: string | null): string {
@@ -34,10 +34,11 @@ export default function ArticleCard({ article }: { article: Article }) {
 
   const urlParam = article.slug || article.id;
   const linkPath = article.category === "Movies" ? `/movies/${urlParam}` : `/article/${urlParam}`;
+  const location = useLocation();
 
   return (
     <div className="news-card">
-      <Link to={linkPath} className="news-card-image-link">
+      <Link to={linkPath} state={{ from: location.search }} className="news-card-image-link">
         <div className="news-card-image">
           <img
             src={article.image_url || PLACEHOLDER_IMAGE}
@@ -58,7 +59,7 @@ export default function ArticleCard({ article }: { article: Article }) {
           <span className="article-time">{formatTime(article.published_at)}</span>
         </div>
         <h2 className="news-card-headline">
-          <Link to={linkPath}>
+          <Link to={linkPath} state={{ from: location.search }}>
             {article.original_headline}
           </Link>
         </h2>

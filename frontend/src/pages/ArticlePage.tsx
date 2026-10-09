@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { fetchArticle, fetchRelatedArticles } from "../api/client";
 import type { Article } from "../types";
@@ -37,6 +37,7 @@ function splitIntoParagraphs(text: string): string[] {
 
 export default function ArticlePage() {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const [article, setArticle] = useState<Article | null>(null);
   const [related, setRelated] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
@@ -87,9 +88,10 @@ export default function ArticlePage() {
   }
 
   if (error || !article) {
+    const fromSearch = location.state?.from || "";
     return (
       <div>
-        <Link to="/" className="back-link">
+        <Link to={`/${fromSearch}`} className="back-link">
           ← Back to feed
         </Link>
         <div className="error-state">
@@ -135,7 +137,11 @@ export default function ArticlePage() {
           })}
         </script>
       </Helmet>
-      <Link to={article.category ? `/?category=${encodeURIComponent(article.category)}` : "/"} className="back-link">
+      
+      <Link 
+        to={location.state?.from ? `/${location.state.from}` : (article.category ? `/?category=${encodeURIComponent(article.category)}` : "/")} 
+        className="back-link"
+      >
         ← Back to feed
       </Link>
 

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { PortableText } from "@portabletext/react";
 import { sanityClient, urlFor } from "../lib/sanity";
@@ -7,6 +7,7 @@ import type { MovieNews } from "../types/sanity";
 
 export default function Verify() {
   const { slug } = useParams<{ slug: string }>();
+  const location = useLocation();
   const [movie, setMovie] = useState<MovieNews | null>(null);
   const [relatedMovies, setRelatedMovies] = useState<MovieNews[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,7 +67,7 @@ export default function Verify() {
       <section className="verify-page">
         <h1>Not Found</h1>
         <p>This entry does not exist.</p>
-        <Link to="/?category=Movies" className="back-link">← Back to feed</Link>
+        <Link to={location.state?.from ? `/${location.state.from}` : "/?category=Movies"} className="back-link">← Back to feed</Link>
       </section>
     );
   }
@@ -147,6 +148,7 @@ export default function Verify() {
                   <div key={relMovie._id} className="news-grid-item-dynamic" style={{ '--dynamic-span': span } as any}>
                     <Link
                       to={`/movies/${relMovie.slug.current}`}
+                      state={{ from: location.state?.from || location.search }}
                       className="news-card"
                       style={{ textDecoration: 'none' }}
                     >

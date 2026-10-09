@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import type { Article } from "../types";
 
 function formatTime(dateStr: string | null): string {
@@ -32,6 +32,7 @@ export default function ArticleListItem({ article }: { article: Article }) {
 
   const urlParam = article.slug || article.id;
   const linkPath = article.category === "Movies" ? `/movies/${urlParam}` : `/article/${urlParam}`;
+  const location = useLocation();
 
   return (
     <div className="news-list-item">
@@ -44,7 +45,7 @@ export default function ArticleListItem({ article }: { article: Article }) {
           <span className="article-time">{formatTime(article.published_at)}</span>
         </div>
         <h2 className="news-list-item-headline">
-          <Link to={linkPath}>
+          <Link to={linkPath} state={{ from: location.search }}>
             {article.original_headline}
           </Link>
         </h2>
