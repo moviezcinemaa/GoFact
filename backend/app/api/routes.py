@@ -95,7 +95,7 @@ async def get_article(request: Request, article_id: str, db: AsyncSession = Depe
 @cache(expire=3600)
 async def get_related_articles(
     request: Request,
-    article_id: UUID,
+    article_id: str,
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -103,7 +103,12 @@ async def get_related_articles(
     or the same category as the given article.
     """
     # Fetch the source article
-    result = await db.execute(select(Article).where(Article.id == article_id))
+    try:
+        val_uuid = UUID(article_id)
+        result = await db.execute(select(Article).where(Article.id == val_uuid))
+    except ValueError:
+        result = await db.execute(select(Article).where(Article.slug == article_id))
+        
     article = result.scalar_one_or_none()
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
@@ -128,7 +133,7 @@ async def get_related_articles(
         select(Article)
         .where(
             and_(
-                Article.id != article_id,
+                Article.id != article.id,
                 Article.ai_summary.is_not(None),
                 or_(*conditions),
             )
