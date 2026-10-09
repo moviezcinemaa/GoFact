@@ -2,29 +2,38 @@ import { Helmet } from 'react-helmet-async';
 
 export default function Disclaimer() {
   return (
-    <div className="max-w-4xl mx-auto p-6 mb-12">
+    <div className="static-page">
       <Helmet>
         <title>Financial Disclaimer | GoFact</title>
         <meta name="description" content="Legal and financial disclaimer regarding aggregated content on GoFact." />
       </Helmet>
 
-      <div className="bg-gray-50 border border-gray-300 p-8 rounded-none">
-        <h1 className="text-2xl font-bold font-serif mb-6 border-b border-black pb-4">Financial Disclaimer</h1>
+      <div className="static-doc-header">
+        <div className="doc-meta"><strong>DOCUMENT ID</strong> DT-DSC-001</div>
+        <div className="doc-meta"><strong>SUBJECT</strong> FINANCIAL DISCLAIMER</div>
+        <div className="doc-meta"><strong>LAST UPDATED</strong> OCT 2026</div>
+      </div>
+
+      <div className="static-doc-content">
+        <h2>1. Informational Purposes Only</h2>
+        <p>
+          The material presented on GoFact (www.gofact.in) is synthesized through automated data pipelines and AI summarization models strictly for general information and educational awareness. None of the content constitutes individualized investment advice, securities recommendations, or financial counseling.
+        </p>
         
-        <div className="space-y-6 text-sm text-black">
-          <p>
-            <strong>1. Informational Purposes Only:</strong> The material presented on GoFact (www.gofact.in) is synthesized through automated data pipelines and AI summarization models strictly for general information and educational awareness. None of the content constitutes individualized investment advice, securities recommendations, or financial counseling.
-          </p>
-          <p>
-            <strong>2. Data Accuracy & Completeness:</strong> Market conditions fluctuate rapidly. While we source data from reputable public wire services, GoFact does not guarantee the absolute timeliness, accuracy, or completeness of stock quotes, earnings projections, or regulatory summaries.
-          </p>
-          <p>
-            <strong>3. Investment Risk:</strong> Trading equities, options, indices, commodities, and digital currencies involves substantial risk of capital loss. Readers must consult registered financial advisors before executing any financial transaction based on topics discussed herein.
-          </p>
-          <p>
-            <strong>4. Third-Party Advertising:</strong> GoFact displays advertisements provided by Google AdSense and other advertising networks. We do not evaluate or endorse any product, platform, or brokerage service advertised on the platform.
-          </p>
-        </div>
+        <h2>2. Data Accuracy & Completeness</h2>
+        <p>
+          Market conditions fluctuate rapidly. While we source data from reputable public wire services, GoFact does not guarantee the absolute timeliness, accuracy, or completeness of stock quotes, earnings projections, or regulatory summaries.
+        </p>
+        
+        <h2>3. Investment Risk</h2>
+        <p>
+          Trading equities, options, indices, commodities, and digital currencies involves substantial risk of capital loss. Readers must consult registered financial advisors before executing any financial transaction based on topics discussed herein.
+        </p>
+        
+        <h2>4. Third-Party Advertising</h2>
+        <p>
+          GoFact displays advertisements provided by Google AdSense and other advertising networks. We do not evaluate or endorse any product, platform, or brokerage service advertised on the platform.
+        </p>
       </div>
     </div>
   );
