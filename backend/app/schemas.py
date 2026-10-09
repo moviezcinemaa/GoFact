@@ -20,6 +20,9 @@ class ArticleBase(BaseModel):
     
     # Phase 3: Multi-source clustering
     additional_sources: Optional[list[dict]] = None
+    
+    # Phase 4: SEO
+    slug: Optional[str] = None
 
 
 class ArticleCreate(ArticleBase):
