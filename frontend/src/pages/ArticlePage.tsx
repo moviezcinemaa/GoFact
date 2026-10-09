@@ -58,6 +58,20 @@ export default function ArticlePage() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  // 2. Dynamically Update the Browser Tab Title
+  useEffect(() => {
+    if (article && article.original_headline) {
+      document.title = `${article.original_headline} | GoFact`;
+    } else if (loading) {
+      document.title = "Loading Article... | GoFact";
+    }
+
+    // Cleanup: Reset title when the user navigates away from the article page
+    return () => {
+      document.title = "GoFact | Global Financial Intelligence";
+    };
+  }, [article, loading]);
+
   if (loading) {
     return (
       <div className="article-detail">
