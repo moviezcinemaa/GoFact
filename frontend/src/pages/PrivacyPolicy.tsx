@@ -68,7 +68,7 @@ export default function PrivacyPolicy() {
             )
           </li>
           <li>Neon for database hosting</li>
-          <li>AI summarization APIs (Grok, Gemini, Groq) for content processing</li>
+          <li>AI summarization APIs (Gemini, Groq) for content processing</li>
         </ul>
 
         <h2>Data Retention</h2>
