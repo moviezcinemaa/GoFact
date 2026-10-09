@@ -77,8 +77,13 @@ async def list_articles(
 @router.get("/articles/{article_id}", response_model=ArticleResponse)
 @limiter.limit("60/minute")
 @cache(expire=3600)
-async def get_article(request: Request, article_id: UUID, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Article).where(Article.id == article_id))
+async def get_article(request: Request, article_id: str, db: AsyncSession = Depends(get_db)):
+    try:
+        val_uuid = UUID(article_id)
+        result = await db.execute(select(Article).where(Article.id == val_uuid))
+    except ValueError:
+        result = await db.execute(select(Article).where(Article.slug == article_id))
+        
     article = result.scalar_one_or_none()
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
@@ -214,11 +219,13 @@ async def get_rss_feed(db: AsyncSession = Depends(get_db)):
     rss_items = ""
     for art in articles:
         pub_date = art.published_at.strftime("%a, %d %b %Y %H:%M:%S GMT") if art.published_at else ""
+        url_slug = art.slug if art.slug else str(art.id)
+        article_link = f"https://www.gofact.in/article/{url_slug}"
         rss_items += f"""
         <item>
             <title><![CDATA[{art.original_headline}]]></title>
-            <link>https://www.gofact.in/article/{art.id}</link>
-            <guid>https://www.gofact.in/article/{art.id}</guid>
+            <link>{article_link}</link>
+            <guid>{article_link}</guid>
             <pubDate>{pub_date}</pubDate>
             <description><![CDATA[{art.detailed_summary or art.ai_summary or ''}]]></description>
             <category>{art.category or 'Finance'}</category>

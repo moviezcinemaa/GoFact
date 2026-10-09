@@ -89,17 +89,23 @@ async def run_scrape_cycle():
 
     async with async_session() as db:
         # Step 1: Insert ALL incoming articles into DB immediately as unsummarized
+        from app.utils.slugify import generate_article_slug
+        import uuid
+        
         for article in clustered_articles:
             existing = await db.execute(select(Article).where(Article.original_url == article.url))
             if not existing.scalar_one_or_none():
+                article_id = uuid.uuid4()
                 db.add(Article(
+                    id=article_id,
                     original_headline=article.headline,
                     original_url=article.url,
                     source_domain=article.source_domain,
                     published_at=article.published_at,
                     created_at=datetime.now(timezone.utc),
                     image_url=article.image_url,
-                    additional_sources=article.additional_sources
+                    additional_sources=article.additional_sources,
+                    slug=generate_article_slug(article.headline, article_id)
                 ))
         await db.commit()
 

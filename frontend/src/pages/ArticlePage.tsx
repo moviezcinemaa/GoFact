@@ -94,7 +94,8 @@ export default function ArticlePage() {
       <Helmet>
         <title>{article.original_headline} | GoFact</title>
         <meta name="description" content={article.detailed_summary?.slice(0, 155) || article.ai_summary?.slice(0, 155) || article.original_headline} />
-        <link rel="canonical" href={`https://www.gofact.in/article/${article.id}`} />
+        <link rel="canonical" href={`https://www.gofact.in/article/${article.slug || article.id}`} />
+        <meta property="og:url" content={`https://www.gofact.in/article/${article.slug || article.id}`} />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",

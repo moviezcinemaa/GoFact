@@ -34,6 +34,9 @@ class Article(Base):
     # Phase 3 columns (Multi-source clustering)
     from sqlalchemy.dialects.postgresql import JSONB
     additional_sources: Mapped[list[dict] | None] = mapped_column(JSONB, nullable=True, default=list)
+    
+    # Phase 4 columns (SEO)
+    slug: Mapped[str | None] = mapped_column(String(300), unique=True, index=True, nullable=True)
 
     def __repr__(self) -> str:
         return f"<Article {self.source_domain}: {self.original_headline[:50]}>"

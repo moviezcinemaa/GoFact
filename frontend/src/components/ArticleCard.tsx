@@ -32,7 +32,8 @@ export default function ArticleCard({ article }: { article: Article }) {
       ? summaryPreview.slice(0, 120).trimEnd() + "..."
       : summaryPreview;
 
-  const linkPath = article.category === "Movies" ? `/movies/${article.id}` : `/article/${article.id}`;
+  const urlParam = article.slug || article.id;
+  const linkPath = article.category === "Movies" ? `/movies/${urlParam}` : `/article/${urlParam}`;
 
   return (
     <div className="news-card">

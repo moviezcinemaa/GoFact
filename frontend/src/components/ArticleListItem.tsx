@@ -30,7 +30,8 @@ export default function ArticleListItem({ article }: { article: Article }) {
       ? summaryPreview.slice(0, 180).trimEnd() + "..."
       : summaryPreview;
 
-  const linkPath = article.category === "Movies" ? `/movies/${article.id}` : `/article/${article.id}`;
+  const urlParam = article.slug || article.id;
+  const linkPath = article.category === "Movies" ? `/movies/${urlParam}` : `/article/${urlParam}`;
 
   return (
     <div className="news-list-item">

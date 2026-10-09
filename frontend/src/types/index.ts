@@ -15,6 +15,7 @@ export interface Article {
   detailed_summary: string | null;
   // Phase 3
   additional_sources: { url: string; domain: string; headline: string }[] | null;
+  slug?: string;
 }
 
 export interface ArticleListResponse {
