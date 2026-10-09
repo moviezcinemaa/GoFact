@@ -46,14 +46,14 @@ export default function MovieEntry() {
       <section className="movie-entry">
         <h1>Not Found</h1>
         <p>This movie entry does not exist.</p>
-        <Link to={location.state?.from ? `/${location.state.from}` : "/?category=Movies"} className="back-link">← Back to feed</Link>
+        <Link to={typeof location.state?.from === 'string' ? `/${location.state.from}` : "/?category=Movies"} className="back-link">← Back to feed</Link>
       </section>
     );
   }
 
   return (
     <section className="movie-entry">
-      <Link to={location.state?.from ? `/${location.state.from}` : "/?category=Movies"} className="back-link">← Back to feed</Link>
+      <Link to={typeof location.state?.from === 'string' ? `/${location.state.from}` : "/?category=Movies"} className="back-link">← Back to feed</Link>
 
       <h1 className="movie-entry-title">{movie.title}</h1>
 
@@ -99,7 +99,7 @@ export default function MovieEntry() {
                 <div key={relMovie._id} className="news-grid-item-dynamic" style={{ '--dynamic-span': span } as any}>
                   <Link
                     to={`/movies/${relMovie.slug.current}`}
-                    state={{ from: location.state?.from || location.search }}
+                    state={{ from: typeof location.state?.from === 'string' ? location.state.from : location.search }}
                     className="news-card"
                     style={{ textDecoration: 'none' }}
                   >

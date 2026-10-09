@@ -88,7 +88,7 @@ export default function ArticlePage() {
   }
 
   if (error || !article) {
-    const fromSearch = location.state?.from || "";
+    const fromSearch = typeof location.state?.from === 'string' ? location.state.from : "";
     return (
       <div>
         <Link to={`/${fromSearch}`} className="back-link">
@@ -139,7 +139,7 @@ export default function ArticlePage() {
       </Helmet>
       
       <Link 
-        to={location.state?.from ? `/${location.state.from}` : (article.category ? `/?category=${encodeURIComponent(article.category)}` : "/")} 
+        to={typeof location.state?.from === 'string' ? `/${location.state.from}` : (article.category ? `/?category=${encodeURIComponent(article.category)}` : "/")} 
         className="back-link"
       >
         ← Back to feed

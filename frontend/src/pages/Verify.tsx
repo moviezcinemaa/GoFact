@@ -67,7 +67,7 @@ export default function Verify() {
       <section className="verify-page">
         <h1>Not Found</h1>
         <p>This entry does not exist.</p>
-        <Link to={location.state?.from ? `/${location.state.from}` : "/?category=Movies"} className="back-link">← Back to feed</Link>
+        <Link to={typeof location.state?.from === 'string' ? `/${location.state.from}` : "/?category=Movies"} className="back-link">← Back to feed</Link>
       </section>
     );
   }
@@ -148,7 +148,7 @@ export default function Verify() {
                   <div key={relMovie._id} className="news-grid-item-dynamic" style={{ '--dynamic-span': span } as any}>
                     <Link
                       to={`/movies/${relMovie.slug.current}`}
-                      state={{ from: location.state?.from || location.search }}
+                      state={{ from: typeof location.state?.from === 'string' ? location.state.from : location.search }}
                       className="news-card"
                       style={{ textDecoration: 'none' }}
                     >
