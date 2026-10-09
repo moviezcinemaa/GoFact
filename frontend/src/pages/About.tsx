@@ -1,6 +1,13 @@
+import { Helmet } from "react-helmet-async";
+
 export default function About() {
   return (
     <div className="static-page">
+      <Helmet>
+        <title>About Us | GoFact</title>
+        <meta name="description" content="Overview of GoFact's automated financial news syndication platform and mission." />
+        <link rel="canonical" href="https://www.gofact.in/about" />
+      </Helmet>
       <div className="static-doc-header">
         <div className="doc-meta"><strong>DOCUMENT ID</strong> DT-ABT-001</div>
         <div className="doc-meta"><strong>SUBJECT</strong> ABOUT GOFACT</div>

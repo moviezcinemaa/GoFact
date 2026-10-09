@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { fetchArticle, fetchRelatedArticles } from "../api/client";
 import type { Article } from "../types";
 import ArticleCard from "../components/ArticleCard";
@@ -90,6 +91,35 @@ export default function ArticlePage() {
 
   return (
     <div className="article-detail">
+      <Helmet>
+        <title>{article.original_headline} | GoFact</title>
+        <meta name="description" content={article.detailed_summary?.slice(0, 155) || article.ai_summary?.slice(0, 155) || article.original_headline} />
+        <link rel="canonical" href={`https://www.gofact.in/article/${article.id}`} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "NewsArticle",
+            "headline": article.original_headline,
+            "image": article.image_url ? [article.image_url] : [],
+            "datePublished": article.published_at || article.created_at,
+            "dateModified": article.created_at,
+            "author": [{
+              "@type": "Organization",
+              "name": "GoFact",
+              "url": "https://www.gofact.in"
+            }],
+            "publisher": {
+              "@type": "Organization",
+              "name": "GoFact",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "https://www.gofact.in/favicon.jpg"
+              }
+            },
+            "description": article.detailed_summary || article.ai_summary
+          })}
+        </script>
+      </Helmet>
       <Link to={article.category ? `/?category=${encodeURIComponent(article.category)}` : "/"} className="back-link">
         ← Back to feed
       </Link>

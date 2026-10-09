@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { PortableText } from "@portabletext/react";
 import { sanityClient, urlFor } from "../lib/sanity";
 import type { MovieNews } from "../types/sanity";
@@ -72,6 +73,9 @@ export default function Verify() {
 
   return (
     <>
+      <Helmet>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <section className="verify-page">
         <h1 className="verify-title">{movie.title}</h1>
         <div className="verify-timer-section">

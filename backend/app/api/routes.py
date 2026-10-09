@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from uuid import UUID
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc, text, or_, and_, any_
 from app.database import get_db
@@ -186,8 +187,53 @@ async def list_categories(db: AsyncSession = Depends(get_db)):
     """Return distinct categories currently in the database."""
     result = await db.execute(
         select(Article.category)
-        .where(Article.category.is_not(None))
+        .where(
+            and_(
+                Article.category.is_not(None),
+                Article.category != ""
+            )
+        )
         .distinct()
         .order_by(Article.category)
     )
-    return result.scalars().all()
+    categories = result.scalars().all()
+    return [c for c in categories if c]
+
+
+@router.get("/feed.xml")
+async def get_rss_feed(db: AsyncSession = Depends(get_db)):
+    query = (
+        select(Article)
+        .where(Article.ai_summary.is_not(None))
+        .order_by(desc(Article.published_at))
+        .limit(30)
+    )
+    result = await db.execute(query)
+    articles = result.scalars().all()
+    
+    rss_items = ""
+    for art in articles:
+        pub_date = art.published_at.strftime("%a, %d %b %Y %H:%M:%S GMT") if art.published_at else ""
+        rss_items += f"""
+        <item>
+            <title><![CDATA[{art.original_headline}]]></title>
+            <link>https://www.gofact.in/article/{art.id}</link>
+            <guid>https://www.gofact.in/article/{art.id}</guid>
+            <pubDate>{pub_date}</pubDate>
+            <description><![CDATA[{art.detailed_summary or art.ai_summary or ''}]]></description>
+            <category>{art.category or 'Finance'}</category>
+        </item>
+        """
+        
+    rss_content = f"""<?xml version="1.0" encoding="UTF-8"?>
+    <rss version="2.0">
+        <channel>
+            <title>GoFact Financial Intelligence</title>
+            <link>https://www.gofact.in</link>
+            <description>Raw market data distilled into actionable insights.</description>
+            <language>en-us</language>
+            {rss_items}
+        </channel>
+    </rss>"""
+    
+    return Response(content=rss_content, media_type="application/xml")

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { fetchArticles, searchArticles } from "../api/client";
 import { sanityClient, urlFor } from "../lib/sanity";
 import type { Article, Category } from "../types";
@@ -156,6 +157,11 @@ export default function Home() {
 
   return (
     <>
+      <Helmet>
+        <title>GoFact | Global Financial Intelligence & Real-Time Market News</title>
+        <meta name="description" content="Aggregated and verified global market data, stock analysis, and economic insights distilled for modern investors." />
+        <link rel="canonical" href="https://www.gofact.in/" />
+      </Helmet>
       <h1 className="page-heading">Global Financial Intelligence</h1>
       <p className="page-subheading">
         Raw market data distilled into actionable insights. Powered by a resilient 17-model AI chain, stripping the noise from global financial coverage.

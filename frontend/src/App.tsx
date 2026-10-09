@@ -6,6 +6,7 @@ import About from "./pages/About";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Contact from "./pages/Contact";
+import Disclaimer from "./pages/Disclaimer";
 import MoviesFeed from "./pages/MoviesFeed";
 import MovieEntry from "./pages/MovieEntry";
 import Verify from "./pages/Verify";
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="/about" element={<About />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/movies" element={<MoviesFeed />} />
           <Route path="/movies/:slug" element={<MovieEntry />} />

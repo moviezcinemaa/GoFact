@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { PortableText } from "@portabletext/react";
 import { sanityClient, urlFor } from "../lib/sanity";
 import type { MovieNews } from "../types/sanity";
@@ -47,6 +48,9 @@ export default function DownloadOptions() {
 
   return (
     <>
+      <Helmet>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <section className="download-page">
         <h1 className="download-title">{movie.title}</h1>
         <p className="download-subtitle">Select Community Resource</p>

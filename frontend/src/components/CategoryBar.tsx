@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Category } from "../types";
-import { CATEGORIES } from "../types";
+import { fetchCategories } from "../api/client";
 
 interface CategoryBarProps {
   active: Category;
@@ -9,6 +9,26 @@ interface CategoryBarProps {
 
 export default function CategoryBar({ active, onChange }: CategoryBarProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>(["All"]);
+
+  useEffect(() => {
+    fetchCategories()
+      .then((cats) => {
+        if (cats && cats.length > 0) {
+          // Add 'All' and 'Movies' to the dynamic list
+          const formatted = cats.map(c => c as Category);
+          const finalCats: Category[] = ["All" as Category, ...formatted];
+          if (!finalCats.includes("Movies" as any)) {
+            finalCats.push("Movies" as any);
+          }
+          setCategories(finalCats);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch categories", err);
+        setCategories(["All", "Movies" as any]);
+      });
+  }, []);
 
   return (
     <div className="category-accordion-wrapper">
@@ -23,7 +43,7 @@ export default function CategoryBar({ active, onChange }: CategoryBarProps) {
       <div className={`category-accordion-content ${isOpen ? "open" : ""}`}>
         <div className="category-accordion-inner">
           <div className="category-chips">
-            {CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <button
                 key={cat}
                 className={`category-chip${active === cat ? " active" : ""}`}
