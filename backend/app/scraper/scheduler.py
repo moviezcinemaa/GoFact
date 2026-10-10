@@ -40,11 +40,15 @@ async def run_scrape_cycle():
         unsummarized_count = await db.scalar(
             select(func.count(Article.id)).where(Article.ai_summary.is_(None))
         )
+        
         if last_article is None or (unsummarized_count and unsummarized_count > 0):
             since_hours = 72
             logger.info(f"Cold start or {unsummarized_count} unsummarized articles detected: fetching news from the past 72 hours.")
         else:
-            logger.info("Fetching news from the last 1 hour.")
+            time_diff = datetime.now(timezone.utc) - last_article.replace(tzinfo=timezone.utc)
+            since_hours = max(1, int(time_diff.total_seconds() / 3600) + 1)
+            since_hours = min(since_hours, 72)
+            logger.info(f"Fetching news from the last {since_hours} hours (time since last article).")
 
     # Step 1: Read feeds
     feed_articles = await read_feeds(since_hours)
