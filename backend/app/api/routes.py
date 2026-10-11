@@ -211,6 +211,7 @@ async def list_categories(db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/sitemap.xml")
+@router.head("/sitemap.xml")
 async def get_dynamic_sitemap(db: AsyncSession = Depends(get_db)):
     """Dynamic sitemap that includes all articles from the database."""
     base_url = "https://gofact.in"
@@ -266,6 +267,7 @@ async def get_dynamic_sitemap(db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/feed.xml")
+@router.head("/feed.xml")
 async def get_rss_feed(db: AsyncSession = Depends(get_db)):
     query = (
         select(Article)
