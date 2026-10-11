@@ -210,6 +210,61 @@ async def list_categories(db: AsyncSession = Depends(get_db)):
     return [c for c in categories if c]
 
 
+@router.get("/sitemap.xml")
+async def get_dynamic_sitemap(db: AsyncSession = Depends(get_db)):
+    """Dynamic sitemap that includes all articles from the database."""
+    base_url = "https://gofact.in"
+    now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    # 1. Core Static Pages
+    static_routes = [
+        {"loc": f"{base_url}/", "priority": "1.0", "changefreq": "hourly"},
+        {"loc": f"{base_url}/about", "priority": "0.5", "changefreq": "monthly"},
+        {"loc": f"{base_url}/contact", "priority": "0.5", "changefreq": "monthly"},
+        {"loc": f"{base_url}/movies", "priority": "0.9", "changefreq": "daily"},
+    ]
+
+    xml_urls = ""
+    for route in static_routes:
+        xml_urls += f"""
+  <url>
+    <loc>{route['loc']}</loc>
+    <lastmod>{now_iso}</lastmod>
+    <changefreq>{route['changefreq']}</changefreq>
+    <priority>{route['priority']}</priority>
+  </url>"""
+
+    # 2. Dynamic Article Pages from PostgreSQL
+    result = await db.execute(
+        select(Article)
+        .where(Article.ai_summary.is_not(None))
+        .order_by(desc(Article.published_at))
+        .limit(500)
+    )
+    articles = result.scalars().all()
+
+    for art in articles:
+        identifier = art.slug if art.slug else str(art.id)
+        pub_date = (
+            art.published_at.strftime("%Y-%m-%dT%H:%M:%SZ")
+            if art.published_at
+            else now_iso
+        )
+        xml_urls += f"""
+  <url>
+    <loc>{base_url}/article/{identifier}</loc>
+    <lastmod>{pub_date}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>"""
+
+    sitemap_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{xml_urls}
+</urlset>"""
+
+    return Response(content=sitemap_xml, media_type="application/xml")
+
+
 @router.get("/feed.xml")
 async def get_rss_feed(db: AsyncSession = Depends(get_db)):
     query = (
@@ -225,7 +280,7 @@ async def get_rss_feed(db: AsyncSession = Depends(get_db)):
     for art in articles:
         pub_date = art.published_at.strftime("%a, %d %b %Y %H:%M:%S GMT") if art.published_at else ""
         url_slug = art.slug if art.slug else str(art.id)
-        article_link = f"https://www.gofact.in/article/{url_slug}"
+        article_link = f"https://gofact.in/article/{url_slug}"
         rss_items += f"""
         <item>
             <title><![CDATA[{art.original_headline}]]></title>
@@ -241,7 +296,7 @@ async def get_rss_feed(db: AsyncSession = Depends(get_db)):
     <rss version="2.0">
         <channel>
             <title>GoFact Financial Intelligence</title>
-            <link>https://www.gofact.in</link>
+            <link>https://gofact.in</link>
             <description>Raw market data distilled into actionable insights.</description>
             <language>en-us</language>
             {rss_items}
