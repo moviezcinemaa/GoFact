@@ -113,11 +113,30 @@ async def run_scrape_cycle():
                 ))
         await db.commit()
 
-        # Step 2: Cleanup old articles (older than 3 days)
-        from sqlalchemy import delete, desc
+        # Step 2: Cleanup retention
+        # - Prune published articles older than 60 days to protect SEO indexing and avoid dead 404s
+        # - Prune failed/unsummarized drafts older than 1 day to keep DB clean
+        from sqlalchemy import delete, desc, and_
         from datetime import timedelta
-        cutoff = datetime.now(timezone.utc) - timedelta(days=3)
-        await db.execute(delete(Article).where(Article.created_at < cutoff))
+        published_cutoff = datetime.now(timezone.utc) - timedelta(days=60)
+        unsummarized_cutoff = datetime.now(timezone.utc) - timedelta(days=1)
+
+        await db.execute(
+            delete(Article).where(
+                and_(
+                    Article.ai_summary.is_not(None),
+                    Article.created_at < published_cutoff
+                )
+            )
+        )
+        await db.execute(
+            delete(Article).where(
+                and_(
+                    Article.ai_summary.is_(None),
+                    Article.created_at < unsummarized_cutoff
+                )
+            )
+        )
         
         # Step 3: Keep only the 54 most recent unsummarized articles in DB to prevent endless cold starts
         unsummarized_query = select(Article.id).where(Article.ai_summary.is_(None)).order_by(desc(Article.published_at)).offset(54)

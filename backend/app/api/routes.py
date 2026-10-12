@@ -240,7 +240,7 @@ async def get_dynamic_sitemap(db: AsyncSession = Depends(get_db)):
         select(Article)
         .where(Article.ai_summary.is_not(None))
         .order_by(desc(Article.published_at))
-        .limit(500)
+        .limit(2000)
     )
     articles = result.scalars().all()
 
