@@ -160,7 +160,7 @@ export default function Home() {
       <Helmet>
         <title>GoFact | Global Financial Intelligence & Real-Time Market News</title>
         <meta name="description" content="Aggregated and verified global market data, stock analysis, and economic insights distilled for modern investors." />
-        <link rel="canonical" href="https://www.gofact.in/" />
+        <link rel="canonical" href="https://gofact.in/" />
       </Helmet>
       <h1 className="page-heading">Global Financial Intelligence</h1>
       <p className="page-subheading">

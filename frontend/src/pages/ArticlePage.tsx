@@ -110,8 +110,8 @@ export default function ArticlePage() {
       <Helmet>
         <title>{article.original_headline} | GoFact</title>
         <meta name="description" content={article.detailed_summary?.slice(0, 155) || article.ai_summary?.slice(0, 155) || article.original_headline} />
-        <link rel="canonical" href={`https://www.gofact.in/article/${article.slug || article.id}`} />
-        <meta property="og:url" content={`https://www.gofact.in/article/${article.slug || article.id}`} />
+        <link rel="canonical" href={`https://gofact.in/article/${article.slug || article.id}`} />
+        <meta property="og:url" content={`https://gofact.in/article/${article.slug || article.id}`} />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
@@ -123,14 +123,14 @@ export default function ArticlePage() {
             "author": [{
               "@type": "Organization",
               "name": "GoFact",
-              "url": "https://www.gofact.in"
+              "url": "https://gofact.in"
             }],
             "publisher": {
               "@type": "Organization",
               "name": "GoFact",
               "logo": {
                 "@type": "ImageObject",
-                "url": "https://www.gofact.in/favicon.jpg"
+                "url": "https://gofact.in/favicon.jpg"
               }
             },
             "description": article.detailed_summary || article.ai_summary
@@ -150,7 +150,7 @@ export default function ArticlePage() {
         <div className="article-hero-image">
           <img 
             src={article.image_url} 
-            alt="" 
+            alt={article.original_headline || "Article image"} 
           />
           {article.image_source && (
             <div className="image-caption" style={{ fontSize: "0.8rem", color: "#666", marginTop: "4px" }}>

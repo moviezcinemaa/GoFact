@@ -1,9 +1,11 @@
 """
-RSS feed reader for financial news sources.
+RSS feed reader for stock market news sources.
 
-Reads RSS feeds from established financial news sites, extracts article
-metadata (including images from <enclosure> and <media:content> tags),
-and attempts to fetch article text for summarization.
+Reads RSS feeds from top-tier financial news sites focused on stock markets,
+extracts article metadata (including images from <enclosure> and <media:content>
+tags), and attempts to fetch article text for summarization.
+
+Focused on major headline news only — curated for quality over quantity.
 """
 
 import logging
@@ -18,26 +20,82 @@ from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
-# Financial RSS feeds — mix of global + Indian sources for rich image content
+# ── Curated Stock Market RSS Feeds (top-tier sources only) ───────────
 RSS_FEEDS = [
-    # Indian financial news (rich <enclosure>/<media:content> support)
+    # Indian stock market (primary coverage)
     "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",
     "https://economictimes.indiatimes.com/markets/stocks/rssfeeds/2146842.cms",
-    "https://economictimes.indiatimes.com/markets/ipos/rssfeeds/78570498.cms",
-    "https://www.moneycontrol.com/rss/latestnews.xml",
     "https://www.moneycontrol.com/rss/marketreports.xml",
     "https://www.livemint.com/rss/markets",
-    # Global sources
+    # Global stock markets
     "https://www.cnbc.com/id/100003114/device/rss/rss.html",
     "https://feeds.marketwatch.com/marketwatch/topstories/",
-    "https://feeds.finance.yahoo.com/rss/topfinstories",
-    # IPO & GMP Specific
-    "https://ipocentral.in/feed/",
-    # Crypto
-    "https://cointelegraph.com/rss",
-    # Commodities
-    "https://www.moneycontrol.com/rss/MCcommodities.xml",
 ]
+
+# ── Headline quality filter keywords ─────────────────────────────────
+# Headlines containing these patterns are likely low-quality filler
+_SKIP_PATTERNS = [
+    re.compile(r"^\d+ things to know", re.IGNORECASE),
+    re.compile(r"^sponsored", re.IGNORECASE),
+    re.compile(r"^ad:", re.IGNORECASE),
+    re.compile(r"^promoted:", re.IGNORECASE),
+    re.compile(r"horoscope|astrology|zodiac", re.IGNORECASE),
+    re.compile(r"lifestyle|recipe|cricket|bollywood|entertainment", re.IGNORECASE),
+    re.compile(r"^watch:|^video:", re.IGNORECASE),
+]
+
+# Headlines should contain at least one stock-market-related keyword
+_RELEVANCE_KEYWORDS = {
+    # Market indices
+    "nifty", "sensex", "bse", "nse", "s&p", "dow", "nasdaq", "ftse", "hang seng",
+    "nikkei", "dax", "index", "indices",
+    # Stock terms
+    "stock", "share", "shares", "equity", "market", "markets", "bull", "bear",
+    "rally", "crash", "correction", "ipo", "listing", "fpo", "ofs",
+    # Financial terms
+    "earnings", "profit", "revenue", "dividend", "quarterly", "annual",
+    "results", "q1", "q2", "q3", "q4", "fiscal", "eps",
+    # Trading & investing
+    "buy", "sell", "trade", "trading", "investor", "investors", "fund",
+    "mutual fund", "etf", "fii", "dii", "portfolio", "investment",
+    # Corporate actions
+    "ceo", "merger", "acquisition", "takeover", "board", "bonus", "split",
+    "buyback", "stake", "deal", "ipo",
+    # Economy & regulation
+    "rbi", "fed", "interest rate", "inflation", "gdp", "fiscal", "budget",
+    "policy", "sebi", "regulation", "monetary",
+    # Banking & finance
+    "bank", "banking", "fintech", "credit", "loan", "npa",
+    # Commodities (market-moving)
+    "crude", "oil", "gold", "silver", "commodity",
+    # Crypto (market-moving)
+    "bitcoin", "btc", "crypto",
+    # General market terms
+    "analyst", "forecast", "outlook", "target", "upgrade", "downgrade",
+    "sector", "pharma", "it", "auto", "realty", "metal", "fmcg", "midcap",
+    "smallcap", "largecap", "bluechip",
+}
+
+
+def _is_relevant_headline(headline: str) -> bool:
+    """Check if a headline is relevant to stock markets and not filler content."""
+    # Skip very short headlines (likely filler)
+    if len(headline) < 25:
+        return False
+
+    # Skip known junk patterns
+    for pattern in _SKIP_PATTERNS:
+        if pattern.search(headline):
+            return False
+
+    # Check for at least one relevance keyword
+    headline_lower = headline.lower()
+    for keyword in _RELEVANCE_KEYWORDS:
+        if keyword in headline_lower:
+            return True
+
+    # If no keyword matched, skip — this headline is likely off-topic
+    return False
 
 
 @dataclass
@@ -155,8 +213,8 @@ async def fetch_article_text(url: str) -> tuple[str, Optional[str]]:
         return "", None
 
 
-async def read_feeds(since_hours: int = 1) -> list[FeedArticle]:
-    """Parse all configured RSS feeds and return a list of articles within the time window."""
+async def read_feeds(since_hours: int = 24) -> list[FeedArticle]:
+    """Parse all configured RSS feeds and return relevant stock market articles."""
     articles = []
     
     from datetime import timedelta
@@ -179,6 +237,10 @@ async def read_feeds(since_hours: int = 1) -> list[FeedArticle]:
 
                 headline = entry.get("title", "").strip()
                 if not headline:
+                    continue
+
+                # ── Quality & relevance filter ──
+                if not _is_relevant_headline(headline):
                     continue
 
                 summary = entry.get("summary", "")
@@ -213,5 +275,5 @@ async def read_feeds(since_hours: int = 1) -> list[FeedArticle]:
     for result_list in results:
         articles.extend(result_list)
 
-    logger.info(f"Read {len(articles)} articles from {len(RSS_FEEDS)} feeds")
+    logger.info(f"Read {len(articles)} relevant articles from {len(RSS_FEEDS)} feeds")
     return articles

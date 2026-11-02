@@ -1,13 +1,14 @@
 """
-Scheduled scraping pipeline.
+Scheduled scraping pipeline — Daily stock market edition.
 
-Runs on a configurable interval (default: 60 minutes) to:
-1. Read RSS feeds from financial news sources
-2. Check for duplicate URLs in the database
-3. Fetch full article text
-4. Summarize via LLM (with provider rotation) — Phase 2 extracts
+Runs once daily (configurable) to:
+1. Read RSS feeds from curated stock market news sources
+2. Filter for top headline news only (quality over quantity)
+3. Check for duplicate URLs in the database
+4. Fetch full article text
+5. Summarize via LLM (with provider rotation) — extracts
    detailed_summary, category, and tags
-5. Store results in the database
+6. Store results in the database (max 20 articles per cycle)
 """
 
 import logging
@@ -23,40 +24,48 @@ from app.config import get_settings
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler()
 
+# Maximum articles to process per scrape cycle (top headlines only)
+MAX_ARTICLES_PER_CYCLE = 20
+
+# Retention: keep published articles for 90 days (protect SEO indexing)
+RETENTION_DAYS = 90
+
+# Cleanup unsummarized drafts older than this
+UNSUMMARIZED_CLEANUP_DAYS = 1
+
 
 async def run_scrape_cycle():
     """Execute one full scrape-summarize-store cycle."""
-    logger.info("Starting scrape cycle...")
+    logger.info("Starting daily scrape cycle...")
     settings = get_settings()
     summarizer = get_summarizer()
 
-    # Determine if it's a cold start
-    since_hours = 1
+    # Always fetch last 24 hours of news (one daily cycle)
+    since_hours = 24
+
+    # Check for cold start — if DB is empty, look back further
     async with async_session() as db:
         from sqlalchemy import func
         last_article = await db.scalar(
             select(func.max(Article.created_at)).where(Article.ai_summary.is_not(None))
         )
-        unsummarized_count = await db.scalar(
-            select(func.count(Article.id)).where(Article.ai_summary.is_(None))
-        )
-        
-        if last_article is None or (unsummarized_count and unsummarized_count > 0):
-            since_hours = 72
-            logger.info(f"Cold start or {unsummarized_count} unsummarized articles detected: fetching news from the past 72 hours.")
+
+        if last_article is None:
+            since_hours = 48  # Cold start: fetch last 2 days
+            logger.info("Cold start detected: fetching news from the past 48 hours.")
         else:
             time_diff = datetime.now(timezone.utc) - last_article.replace(tzinfo=timezone.utc)
-            since_hours = max(1, int(time_diff.total_seconds() / 3600) + 1)
-            since_hours = min(since_hours, 72)
-            logger.info(f"Fetching news from the last {since_hours} hours (time since last article).")
+            since_hours = max(24, int(time_diff.total_seconds() / 3600) + 1)
+            since_hours = min(since_hours, 48)
+            logger.info(f"Fetching news from the last {since_hours} hours.")
 
-    # Step 1: Read feeds
+    # Step 1: Read feeds (already filtered for relevance in feed_reader)
     feed_articles = await read_feeds(since_hours)
     if not feed_articles:
-        logger.info("No articles found in feeds.")
+        logger.info("No relevant articles found in feeds.")
         return
 
-    # Phase 3: Cluster similar articles
+    # Step 2: Cluster similar articles from different sources
     import difflib
     import re
     
@@ -88,11 +97,18 @@ async def run_scrape_cycle():
         if not found_cluster:
             clustered_articles.append(article)
 
+    # Step 3: Keep only top N articles (sorted by publish date, newest first)
+    clustered_articles.sort(
+        key=lambda a: a.published_at or datetime.min.replace(tzinfo=timezone.utc),
+        reverse=True
+    )
+    clustered_articles = clustered_articles[:MAX_ARTICLES_PER_CYCLE]
+    logger.info(f"Processing top {len(clustered_articles)} articles after clustering and capping.")
+
     new_count = 0
-    skip_count = 0
 
     async with async_session() as db:
-        # Step 1: Insert ALL incoming articles into DB immediately as unsummarized
+        # Step 4: Insert articles into DB as unsummarized
         from app.utils.slugify import generate_article_slug
         import uuid
         
@@ -113,14 +129,12 @@ async def run_scrape_cycle():
                 ))
         await db.commit()
 
-        # Step 2: Cleanup retention
-        # - Prune published articles older than 60 days to protect SEO indexing and avoid dead 404s
-        # - Prune failed/unsummarized drafts older than 1 day to keep DB clean
+        # Step 5: Retention cleanup
         from sqlalchemy import delete, desc, and_
         from datetime import timedelta
-        published_cutoff = datetime.now(timezone.utc) - timedelta(days=60)
-        unsummarized_cutoff = datetime.now(timezone.utc) - timedelta(days=1)
 
+        # Prune published articles older than 90 days
+        published_cutoff = datetime.now(timezone.utc) - timedelta(days=RETENTION_DAYS)
         await db.execute(
             delete(Article).where(
                 and_(
@@ -129,6 +143,9 @@ async def run_scrape_cycle():
                 )
             )
         )
+
+        # Prune failed/unsummarized drafts older than 1 day
+        unsummarized_cutoff = datetime.now(timezone.utc) - timedelta(days=UNSUMMARIZED_CLEANUP_DAYS)
         await db.execute(
             delete(Article).where(
                 and_(
@@ -138,16 +155,18 @@ async def run_scrape_cycle():
             )
         )
         
-        # Step 3: Keep only the 54 most recent unsummarized articles in DB to prevent endless cold starts
-        unsummarized_query = select(Article.id).where(Article.ai_summary.is_(None)).order_by(desc(Article.published_at)).offset(54)
+        # Cap unsummarized articles at MAX_ARTICLES_PER_CYCLE
+        unsummarized_query = select(Article.id).where(
+            Article.ai_summary.is_(None)
+        ).order_by(desc(Article.published_at)).offset(MAX_ARTICLES_PER_CYCLE)
         excess_ids = (await db.execute(unsummarized_query)).scalars().all()
         if excess_ids:
             await db.execute(delete(Article).where(Article.id.in_(excess_ids)))
         await db.commit()
 
-        # Step 4: Fetch up to 54 unsummarized articles from the DB to process
+        # Step 6: Fetch unsummarized articles for processing
         db_articles = (await db.execute(
-            select(Article).where(Article.ai_summary.is_(None)).order_by(desc(Article.published_at)).limit(54)
+            select(Article).where(Article.ai_summary.is_(None)).order_by(desc(Article.published_at)).limit(MAX_ARTICLES_PER_CYCLE)
         )).scalars().all()
         
         db_articles_to_process = []
@@ -171,37 +190,13 @@ async def run_scrape_cycle():
             text = url_to_rss_text.get(db_article_dict["original_url"], "")
             scraped_image = None
             
+            # Fetch full article text if RSS preview is too short
             if len(text) < 200 or not db_article_dict["image_url"]:
                 full_text, scraped_img = await fetch_article_text(db_article_dict["original_url"])
                 if full_text and len(full_text) > len(text):
                     text = full_text
                 if scraped_img and not db_article_dict["image_url"]:
                     scraped_image = scraped_img
-                    
-                if len(text) < 200:
-                    try:
-                        from duckduckgo_search import DDGS
-                        def perform_search():
-                            with DDGS() as ddgs:
-                                return list(ddgs.news(db_article_dict["original_headline"], max_results=3))
-                        results = await asyncio.wait_for(asyncio.to_thread(perform_search), timeout=8.0)
-                        if results:
-                            for r in results:
-                                if r.get('url') and r['url'] != db_article_dict["original_url"]:
-                                    search_url = r['url']
-                                    s_text, _ = await fetch_article_text(search_url)
-                                    if s_text and len(s_text) > 100:
-                                        text += f"\n\n--- Source: {r.get('source', search_url)} ---\n" + s_text
-                                        sources = db_article_dict["additional_sources"]
-                                        sources.append({
-                                            "url": search_url, 
-                                            "domain": r.get('source', search_url), 
-                                            "headline": r.get('title', db_article_dict["original_headline"])
-                                        })
-                                        db_article_dict["additional_sources"] = sources
-                    except Exception as e:
-                        from app.scraper.feed_reader import logger
-                        logger.warning(f"DDG Search failed for '{db_article_dict['original_headline']}': {e}")
             
             final_image_url = db_article_dict["image_url"] or scraped_image
             final_image_source = db_article_dict["source_domain"] if final_image_url else None
@@ -217,7 +212,7 @@ async def run_scrape_cycle():
     prepared_articles = await asyncio.gather(*tasks)
 
     async with async_session() as db:
-        # Step 5: Batch Summarize in chunks of 3
+        # Step 7: Batch Summarize in chunks of 3
         batch_size = 3
         for i in range(0, len(prepared_articles), batch_size):
             chunk = prepared_articles[i:i+batch_size]
@@ -255,9 +250,9 @@ async def run_scrape_cycle():
                     new_count += 1
                 
             await db.commit()
-            await asyncio.sleep(8) # Prevent API rate limit on free tiers (RPM limits)
+            await asyncio.sleep(8)  # Prevent API rate limit on free tiers
 
-    logger.info(f"Scrape cycle complete: {new_count} new, {skip_count} skipped")
+    logger.info(f"Daily scrape cycle complete: {new_count} new articles processed")
 
 
 def start_scheduler():
@@ -273,7 +268,7 @@ def start_scheduler():
     )
     scheduler.start()
     logger.info(
-        f"Scheduler started. Scraping every {settings.scrape_interval_minutes} minutes."
+        f"Scheduler started. Scraping every {settings.scrape_interval_minutes} minutes ({settings.scrape_interval_minutes // 60}h)."
     )
 
 

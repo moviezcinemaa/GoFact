@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     openrouter_api_key: str = ""
 
     # Scraper
-    scrape_interval_minutes: int = 60
+    scrape_interval_minutes: int = 1440  # Once daily (24 hours)
 
     # App
     environment: str = "development"
@@ -30,10 +30,34 @@ class Settings(BaseSettings):
 
     @model_validator(mode='after')
     def fix_database_urls(self) -> 'Settings':
-        if self.database_url and self.database_url.startswith("postgres://"):
-            self.database_url = self.database_url.replace("postgres://", "postgresql+asyncpg://", 1)
-        if self.database_url_sync and self.database_url_sync.startswith("postgres://"):
-            self.database_url_sync = self.database_url_sync.replace("postgres://", "postgresql://", 1)
+        if self.database_url:
+            if self.database_url.startswith("postgres://"):
+                self.database_url = self.database_url.replace("postgres://", "postgresql+asyncpg://", 1)
+            elif self.database_url.startswith("postgresql://") and not self.database_url.startswith("postgresql+asyncpg://"):
+                self.database_url = self.database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+            # asyncpg requires ?ssl=require instead of sslmode, and rejects channel_binding
+            if "?" in self.database_url:
+                base_part, query_part = self.database_url.split("?", 1)
+                from urllib.parse import parse_qs, urlencode
+                params = parse_qs(query_part)
+                clean_params = {}
+                for k, vals in params.items():
+                    if k == "sslmode":
+                        clean_params["ssl"] = vals[0]
+                    elif k in ("ssl",):
+                        clean_params[k] = vals[0]
+                    elif k not in ("channel_binding",):
+                        clean_params[k] = vals[0]
+                if "ssl" not in clean_params:
+                    clean_params["ssl"] = "require"
+                self.database_url = f"{base_part}?{urlencode(clean_params)}"
+
+        if self.database_url_sync:
+            if self.database_url_sync.startswith("postgres://"):
+                self.database_url_sync = self.database_url_sync.replace("postgres://", "postgresql+psycopg://", 1)
+            elif self.database_url_sync.startswith("postgresql://") and not self.database_url_sync.startswith("postgresql+psycopg://"):
+                self.database_url_sync = self.database_url_sync.replace("postgresql://", "postgresql+psycopg://", 1)
         return self
 
 

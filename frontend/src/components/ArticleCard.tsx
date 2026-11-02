@@ -42,7 +42,7 @@ export default function ArticleCard({ article }: { article: Article }) {
         <div className="news-card-image">
           <img
             src={article.image_url || PLACEHOLDER_IMAGE}
-            alt=""
+            alt={article.original_headline || "Article thumbnail"}
             loading="lazy"
             onError={(e) => {
               (e.target as HTMLImageElement).src = PLACEHOLDER_IMAGE;
