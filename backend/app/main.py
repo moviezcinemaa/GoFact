@@ -71,7 +71,14 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.frontend_url, "http://localhost:5173"],
+    allow_origins=[
+        settings.frontend_url,
+        "https://gofact.in",
+        "https://www.gofact.in",
+        "http://localhost:5173",
+        "http://localhost:3000",
+    ],
+    allow_origin_regex=r"^https://([a-zA-Z0-9-]+\.)*gofact\.in$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
