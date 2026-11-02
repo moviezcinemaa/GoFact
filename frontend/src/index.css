@@ -234,20 +234,61 @@ a:hover {
 
 /* ─── Category Bar ──────────────────────────────────────────── */
 
-.category-bar-wrapper {
+.category-accordion-wrapper {
   width: 100%;
   margin-bottom: 24px;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 16px;
+}
+
+.category-accordion-toggle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-card); /* slightly off-white if applicable */
+  border: 1px solid var(--border-color);
+  padding: 12px;
+  font-family: Helvetica, "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: none;
+}
+
+.category-accordion-toggle:hover {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+.toggle-icon {
+  display: inline-block;
+  transition: transform 300ms ease-in-out;
+}
+
+.toggle-icon.open {
+  transform: rotate(180deg);
+}
+
+.category-accordion-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 300ms ease-in-out;
+}
+
+.category-accordion-content.open {
+  grid-template-rows: 1fr;
+}
+
+.category-accordion-inner {
+  overflow: hidden;
 }
 
 .category-chips {
+  padding-top: 12px;
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 4px;
 }
 
 
