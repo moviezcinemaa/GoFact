@@ -219,10 +219,13 @@ async def get_dynamic_sitemap(db: AsyncSession = Depends(get_db)):
 
     # 1. Core Static Pages
     static_routes = [
-        {"loc": f"{base_url}/", "priority": "1.0", "changefreq": "hourly"},
+        {"loc": f"{base_url}/", "priority": "1.0", "changefreq": "daily"},
         {"loc": f"{base_url}/about", "priority": "0.5", "changefreq": "monthly"},
         {"loc": f"{base_url}/contact", "priority": "0.5", "changefreq": "monthly"},
-        {"loc": f"{base_url}/movies", "priority": "0.9", "changefreq": "daily"},
+        {"loc": f"{base_url}/privacy-policy", "priority": "0.3", "changefreq": "monthly"},
+        {"loc": f"{base_url}/terms-of-service", "priority": "0.3", "changefreq": "monthly"},
+        {"loc": f"{base_url}/disclaimer", "priority": "0.3", "changefreq": "monthly"},
+        {"loc": f"{base_url}/movies", "priority": "0.8", "changefreq": "daily"},
     ]
 
     xml_urls = ""
