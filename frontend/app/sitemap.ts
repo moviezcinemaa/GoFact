@@ -4,6 +4,9 @@ import { sanityClient } from "@/lib/sanity";
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://gofact-backend.onrender.com";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     { url: "https://gofact.in", lastModified: new Date(), changeFrequency: "daily", priority: 1 },
@@ -18,8 +21,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let articleEntries: MetadataRoute.Sitemap = [];
   try {
     const res = await fetch(
-      `${API_BASE}/api/articles?page=1&per_page=200`,
-      { next: { revalidate: 3600 } }
+      `${API_BASE}/api/articles?page=1&per_page=100`,
+      { cache: "no-store", signal: AbortSignal.timeout(10000) }
     );
     if (res.ok) {
       const data = await res.json();
