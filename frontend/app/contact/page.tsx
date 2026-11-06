@@ -5,10 +5,15 @@ import type { FormEvent } from "react";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    setSubmitted(true);
+    setIsSubmitting(true);
+    setTimeout(() => {
+      setSubmitted(true);
+      setIsSubmitting(false);
+    }, 400);
   }
 
   if (submitted) {
@@ -63,8 +68,12 @@ export default function ContactPage() {
             <label htmlFor="contact-message">Message</label>
             <textarea id="contact-message" name="message" required></textarea>
           </div>
-          <button type="submit" className="form-submit">
-            TRANSMIT MESSAGE
+          <button
+            type="submit"
+            className={`form-submit ${isSubmitting ? "btn-loading btn-loading-black" : ""}`}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "TRANSMITTING..." : "TRANSMIT MESSAGE"}
           </button>
         </form>
       </div>

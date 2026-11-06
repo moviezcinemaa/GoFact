@@ -11,8 +11,13 @@ interface CategoryBarProps {
 export default function CategoryBar({ active }: CategoryBarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>(["All"]);
+  const [loadingCategory, setLoadingCategory] = useState<Category | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    setLoadingCategory(null);
+  }, [searchParams, active]);
 
   useEffect(() => {
     const API_BASE =
@@ -35,6 +40,8 @@ export default function CategoryBar({ active }: CategoryBarProps) {
   }, []);
 
   function handleChange(cat: Category) {
+    if (cat === active && !searchParams.get("category") && cat === "All") return;
+    setLoadingCategory(cat);
     const params = new URLSearchParams(searchParams.toString());
     if (cat === "All") {
       params.delete("category");
@@ -59,15 +66,26 @@ export default function CategoryBar({ active }: CategoryBarProps) {
       <div className={`category-accordion-content ${isOpen ? "open" : ""}`}>
         <div className="category-accordion-inner">
           <div className="category-chips">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                className={`category-chip${active === cat ? " active" : ""}`}
-                onClick={() => handleChange(cat)}
-              >
-                {cat}
-              </button>
-            ))}
+            {categories.map((cat) => {
+              const isLoading = loadingCategory === cat;
+              const isAnyLoading = Boolean(loadingCategory);
+              return (
+                <button
+                  key={cat}
+                  className={`category-chip${active === cat ? " active" : ""}${
+                    isLoading
+                      ? " btn-loading btn-loading-black"
+                      : isAnyLoading
+                      ? " btn-loading btn-loading-gray"
+                      : ""
+                  }`}
+                  onClick={() => handleChange(cat)}
+                  disabled={isAnyLoading}
+                >
+                  {isLoading ? "LOADING..." : cat}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

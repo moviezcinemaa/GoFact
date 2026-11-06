@@ -5,6 +5,7 @@ import ArticleCard from "@/components/ArticleCard";
 import ArticleListItem from "@/components/ArticleListItem";
 import CategoryBar from "@/components/CategoryBar";
 import SearchBar from "@/components/SearchBar";
+import PaginationControls from "@/components/PaginationControls";
 import Link from "next/link";
 import { sanityClient, urlFor } from "@/lib/sanity";
 
@@ -203,31 +204,14 @@ export default async function HomePage({ searchParams }: HomeProps) {
           )}
 
           {totalPages > 1 && (
-            <div className="pagination">
-              {page <= 1 ? (
-                <button disabled>Previous</button>
-              ) : (
-                <Link
-                  href={`/?page=${page - 1}${category !== "All" ? `&category=${encodeURIComponent(category)}` : ""}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
-                >
-                  Previous
-                </Link>
-              )}
-
-              <span className="page-info">
-                Page {page} of {totalPages}
-              </span>
-
-              {page >= totalPages ? (
-                <button disabled>Next</button>
-              ) : (
-                <Link
-                  href={`/?page=${page + 1}${category !== "All" ? `&category=${encodeURIComponent(category)}` : ""}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
-                >
-                  Next
-                </Link>
-              )}
-            </div>
+            <Suspense fallback={null}>
+              <PaginationControls
+                page={page}
+                totalPages={totalPages}
+                category={category}
+                q={q}
+              />
+            </Suspense>
           )}
         </>
       )}

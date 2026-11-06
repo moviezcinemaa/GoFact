@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Script from "next/script";
+import NextTopLoader from "nextjs-toploader";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://gofact.in"),
@@ -65,6 +66,18 @@ export default function RootLayout({
         </Script>
       </head>
       <body>
+        <NextTopLoader
+          color="#000000"
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={2}
+          crawl={true}
+          showSpinner={false}
+          easing="linear"
+          speed={200}
+          shadow={false}
+          zIndex={99999}
+        />
         <div className="site-wrapper">
           <Header />
           <main className="site-main">{children}</main>

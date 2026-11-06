@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 interface SearchBarProps {
@@ -9,11 +9,17 @@ interface SearchBarProps {
 
 export default function SearchBar({ initialQuery = "" }: SearchBarProps) {
   const [query, setQuery] = useState(initialQuery);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  useEffect(() => {
+    setIsLoading(false);
+  }, [searchParams]);
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setIsLoading(true);
     const trimmed = query.trim();
     const params = new URLSearchParams(searchParams.toString());
     if (trimmed) {
@@ -26,6 +32,7 @@ export default function SearchBar({ initialQuery = "" }: SearchBarProps) {
   }
 
   function handleClear() {
+    setIsLoading(true);
     setQuery("");
     const params = new URLSearchParams(searchParams.toString());
     params.delete("q");
@@ -44,12 +51,21 @@ export default function SearchBar({ initialQuery = "" }: SearchBarProps) {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
-      <button type="submit" className="search-button">
-        Search
+      <button
+        type="submit"
+        className={`search-button ${isLoading ? "btn-loading btn-loading-black" : ""}`}
+        disabled={isLoading}
+      >
+        {isLoading ? "FETCHING..." : "Search"}
       </button>
       {isSearching && (
-        <button type="button" className="search-clear" onClick={handleClear}>
-          Clear
+        <button
+          type="button"
+          className={`search-clear ${isLoading ? "btn-loading btn-loading-gray" : ""}`}
+          onClick={handleClear}
+          disabled={isLoading}
+        >
+          {isLoading ? "WAIT" : "Clear"}
         </button>
       )}
     </form>

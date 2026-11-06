@@ -719,13 +719,14 @@ a:hover {
 }
 
 .static-page a {
-  color: var(--link-color);
+  color: var(--text-primary);
   font-weight: 700;
+  text-decoration: underline;
 }
 
 .static-page a:hover {
-  color: var(--link-hover);
-  background-color: var(--bg-secondary);
+  color: var(--accent);
+  background-color: transparent;
 }
 
 /* ─── Contact Form ──────────────────────────────────────────── */
@@ -1500,6 +1501,101 @@ a:hover {
 .download-btn:hover {
   background: #1a1a1a;
   color: #ffffff;
+}
+
+/* ─── Global Top Bar Loader (Strict Anti-Vibecode) ──────────── */
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  background: #000000 !important;
+  position: fixed !important;
+  z-index: 99999 !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 2px !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  filter: none !important;
+}
+
+#nprogress .peg {
+  display: none !important;
+  box-shadow: none !important;
+}
+
+#nprogress .spinner {
+  display: none !important;
+}
+
+/* ─── Utilitarian Button Interaction & Loading States ────────── */
+button.btn-loading,
+.category-chip.btn-loading,
+.search-button.btn-loading,
+.pagination-btn.btn-loading {
+  transition: none !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.btn-loading-black {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
+}
+
+.btn-loading-gray {
+  background-color: #e5e7eb !important;
+  color: #4b5563 !important;
+  border-color: #9ca3af !important;
+}
+
+/* ─── Strict Blocky Skeleton Loaders ────────────────────────── */
+.skeleton-block {
+  background-color: #e5e7eb;
+  border-radius: 0 !important;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ─── Golden Ratio Return Button (Matching static pages) ───── */
+.btn-golden-return {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 28px;
+  font-family: Helvetica, "Helvetica Neue", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  background-color: var(--text-primary);
+  color: #ffffff !important;
+  border: 1px solid var(--text-primary);
+  border-radius: 0;
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: none;
+}
+
+.btn-golden-return:hover {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff !important;
 }
 
 /* ─── 404 Intelligence Document Page ────────────────────────── */

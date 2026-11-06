@@ -2,9 +2,10 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "404 — Dispatch Not Located | GoFact",
+  title: "404 — Document Not Found | GoFact",
   description:
-    "The requested financial article, intelligence briefing, or archived record could not be found.",
+    "The requested article or intelligence briefing could not be found.",
+  alternates: { canonical: "https://gofact.in" },
 };
 
 const CATEGORIES = [
@@ -18,120 +19,101 @@ const CATEGORIES = [
 
 export default function NotFound() {
   return (
-    <div className="not-found-page">
-      {/* Classified Header */}
-      <div className="not-found-header">
-        <div className="not-found-header-item">
-          <strong>Status Code</strong>
-          <span>404 Not Found</span>
+    <div className="static-page">
+      <div className="static-doc-header">
+        <div className="doc-meta">
+          <strong>DOCUMENT ID</strong> ERR-404-NF
         </div>
-        <div className="not-found-header-item">
-          <strong>Document ID</strong>
-          <span>ERR-404-NF</span>
+        <div className="doc-meta">
+          <strong>STATUS</strong> 404 NOT FOUND
         </div>
-        <div className="not-found-header-item">
-          <strong>Classification</strong>
-          <span>Unindexed Dispatch</span>
-        </div>
-        <div className="not-found-header-item">
-          <strong>Verification Protocol</strong>
-          <span>Active Archive Scan</span>
-        </div>
-        <div className="not-found-header-item">
-          <strong>System Integrity</strong>
-          <span>Monitored &amp; Online</span>
+        <div className="doc-meta">
+          <strong>CLASSIFICATION</strong> UNRESOLVED URI
         </div>
       </div>
 
-      {/* Main Full-Length Dispatch Body */}
-      <div className="not-found-body">
-        <div className="not-found-status-tag">
-          <span>●</span> Archive Notice // Unresolved Address
-        </div>
-
-        <h1 className="not-found-title">404 — Dispatch Not Located</h1>
-
-        <p className="not-found-lead">
-          The requested financial article, intelligence briefing, or archived
-          record could not be located in active indexes. The dispatch may have
-          been retired, updated, reclassified, or the URL address may be
-          mistyped.
+      <div className="static-doc-content">
+        <p>
+          The requested article, market report, or intelligence briefing could
+          not be located in our active indexes. The record may have expired,
+          been updated, or the destination address may be mistyped.
         </p>
 
-        {/* Quick Search */}
+        <div style={{ marginTop: "24px", marginBottom: "32px" }}>
+          <Link href="/" className="btn-golden-return">
+            ← Return to Live Feed
+          </Link>
+        </div>
+
+        <h2>Search Market Intelligence</h2>
         <form
           action="/"
           method="GET"
           className="search-bar"
-          style={{ maxWidth: "580px", marginBottom: "32px" }}
+          style={{ maxWidth: "480px", marginBottom: "28px" }}
         >
           <input
             type="text"
             name="q"
             className="search-input"
-            placeholder="Search companies, tickers, or financial topics..."
+            placeholder="Search companies, tickers, or topics..."
           />
           <button type="submit" className="search-button">
             Search
           </button>
         </form>
 
-        {/* Golden Ratio Action Controls */}
-        <div className="not-found-actions">
-          <Link href="/" className="not-found-action-btn">
-            ← Return to Live Feed
-          </Link>
-          <Link href="/about" className="not-found-secondary-btn">
-            About Our Methodology
-          </Link>
-        </div>
+        <h2>Active Coverage Sectors</h2>
+        <p>Explore our AI-summarized coverage across active news categories:</p>
 
-        {/* Market Sectors */}
-        <h2 className="not-found-section-title">Active Market Sectors</h2>
-        <p className="not-found-section-desc">
-          Jump directly to distilled, noise-free intelligence across active
-          financial coverage:
-        </p>
-
-        <div className="not-found-chips">
-          <Link href="/" className="not-found-chip">
+        <div
+          className="category-chips"
+          style={{ marginTop: "12px", marginBottom: "32px" }}
+        >
+          <Link
+            href="/"
+            className="category-chip"
+            style={{ textDecoration: "none" }}
+          >
             All News
           </Link>
           {CATEGORIES.map((cat) => (
             <Link
               key={cat}
               href={`/?category=${encodeURIComponent(cat)}`}
-              className="not-found-chip"
+              className="category-chip"
+              style={{ textDecoration: "none" }}
             >
               {cat}
             </Link>
           ))}
-          <Link href="/movies" className="not-found-chip">
+          <Link
+            href="/movies"
+            className="category-chip"
+            style={{ textDecoration: "none" }}
+          >
             Movies
           </Link>
         </div>
 
-        {/* Footer Navigation Index */}
-        <div className="not-found-footer-links">
-          <Link href="/" className="not-found-footer-link">
-            Live Feed
-          </Link>
-          <Link href="/about" className="not-found-footer-link">
-            About GoFact
-          </Link>
-          <Link href="/contact" className="not-found-footer-link">
-            Contact Desk
-          </Link>
-          <Link href="/disclaimer" className="not-found-footer-link">
-            Financial Disclaimer
-          </Link>
-          <Link href="/privacy-policy" className="not-found-footer-link">
-            Privacy Policy
-          </Link>
-          <Link href="/terms-of-service" className="not-found-footer-link">
-            Terms of Service
-          </Link>
-        </div>
+        <h2>Index Navigation</h2>
+        <ul>
+          <li>
+            <Link href="/">Live News Feed</Link> — Real-time market stream
+          </li>
+          <li>
+            <Link href="/about">About GoFact</Link> — Methodology &amp; 17-model
+            AI chain
+          </li>
+          <li>
+            <Link href="/contact">Contact Desk</Link> — Inquiries &amp; content
+            removal
+          </li>
+          <li>
+            <Link href="/disclaimer">Disclaimer</Link> — Financial disclaimer
+            &amp; risk notice
+          </li>
+        </ul>
       </div>
     </div>
   );
