@@ -12,14 +12,24 @@ export const metadata: Metadata = {
   },
   description:
     "Real-time AI-summarized stock market news. IPO, Nifty, Sensex, crypto, commodities — curated daily.",
+  icons: {
+    icon: [
+      { url: "/favicon.jpg", type: "image/jpeg" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    shortcut: "/favicon.jpg",
+    apple: "/favicon.jpg",
+  },
   openGraph: {
     siteName: "GoFact",
     locale: "en_IN",
     type: "website",
+    images: [{ url: "https://gofact.in/favicon.jpg", alt: "GoFact Logo" }],
   },
   twitter: {
     card: "summary_large_image",
     site: "@gofact_in",
+    images: ["https://gofact.in/favicon.jpg"],
   },
   robots: {
     index: true,
@@ -36,21 +46,22 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <meta name="google-adsense-account" content="ca-pub-5744613008467521" />
         {/* Google AdSense */}
         <Script
           async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7483748047820393"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5744613008467521"
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
         {/* Google Analytics */}
         <Script
           async
-          src="https://www.googletagmanager.com/gtag/js?id=G-PLACEHOLDER"
+          src="https://www.googletagmanager.com/gtag/js?id=G-CWG18W9HGQ"
           strategy="afterInteractive"
         />
         <Script id="ga-init" strategy="afterInteractive">
-          {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-PLACEHOLDER');`}
+          {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CWG18W9HGQ');`}
         </Script>
       </head>
       <body>

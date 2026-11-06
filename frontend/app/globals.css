@@ -108,8 +108,8 @@ a:hover {
 .site-logo {
   height: 28px;
   width: 28px;
-  object-fit: cover;
-  border: 1px solid var(--text-primary);
+  object-fit: contain;
+  display: block;
 }
 
 .site-nav {
