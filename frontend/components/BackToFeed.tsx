@@ -32,3 +32,4 @@ export default function BackToFeed({ fromParam, category }: BackToFeedProps) {
     </Link>
   );
 }
+
