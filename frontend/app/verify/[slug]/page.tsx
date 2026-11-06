@@ -216,3 +216,4 @@ export default function VerifyPage({ params }: VerifyPageProps) {
     </section>
   );
 }
+

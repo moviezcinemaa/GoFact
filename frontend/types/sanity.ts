@@ -13,3 +13,4 @@ export interface MovieNews {
   telegramLink: string;
   _createdAt?: string;
 }
+

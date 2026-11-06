@@ -159,3 +159,4 @@ export default async function MovieEntryPage({ params }: MoviePageProps) {
     </section>
   );
 }
+
