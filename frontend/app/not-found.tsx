@@ -2,97 +2,134 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "404 — Document Not Found | GoFact",
-  description: "The requested article or intelligence briefing could not be found.",
+  title: "404 — Dispatch Not Located | GoFact",
+  description:
+    "The requested financial article, intelligence briefing, or archived record could not be found.",
 };
 
-export default function NotFound() {
-  const categories = [
-    "Stocks",
-    "IPO",
-    "Economy",
-    "Global",
-    "Crypto",
-    "Commodities",
-  ];
+const CATEGORIES = [
+  "Stocks",
+  "IPO",
+  "Economy",
+  "Global",
+  "Crypto",
+  "Commodities",
+];
 
+export default function NotFound() {
   return (
-    <div className="static-page">
-      <div className="static-doc-header">
-        <div className="doc-meta">
-          <strong>STATUS CODE</strong> 404 NOT FOUND
+    <div className="not-found-page">
+      {/* Classified Header */}
+      <div className="not-found-header">
+        <div className="not-found-header-item">
+          <strong>Status Code</strong>
+          <span>404 Not Found</span>
         </div>
-        <div className="doc-meta">
-          <strong>DOCUMENT ID</strong> ERR-404-NF
+        <div className="not-found-header-item">
+          <strong>Document ID</strong>
+          <span>ERR-404-NF</span>
         </div>
-        <div className="doc-meta">
-          <strong>INCIDENT CLASSIFICATION</strong> UNRESOLVED URI
+        <div className="not-found-header-item">
+          <strong>Classification</strong>
+          <span>Unindexed Dispatch</span>
+        </div>
+        <div className="not-found-header-item">
+          <strong>Verification Protocol</strong>
+          <span>Active Archive Scan</span>
+        </div>
+        <div className="not-found-header-item">
+          <strong>System Integrity</strong>
+          <span>Monitored &amp; Online</span>
         </div>
       </div>
 
-      <div className="static-doc-content">
-        <h1
-          style={{
-            fontFamily: "Georgia, 'Times New Roman', serif",
-            fontSize: "2rem",
-            fontWeight: 700,
-            marginBottom: "12px",
-            color: "var(--text-primary)",
-            letterSpacing: "-0.5px",
-          }}
-        >
-          Dispatch Not Located
-        </h1>
+      {/* Main Full-Length Dispatch Body */}
+      <div className="not-found-body">
+        <div className="not-found-status-tag">
+          <span>●</span> Archive Notice // Unresolved Address
+        </div>
 
-        <p style={{ fontSize: "15px", lineHeight: 1.7, marginBottom: "24px" }}>
-          The news item, intelligence briefing, or resource requested could not
-          be retrieved. The record may have expired, been updated, or the
-          URL address might be mistyped.
+        <h1 className="not-found-title">404 — Dispatch Not Located</h1>
+
+        <p className="not-found-lead">
+          The requested financial article, intelligence briefing, or archived
+          record could not be located in active indexes. The dispatch may have
+          been retired, updated, reclassified, or the URL address may be
+          mistyped.
         </p>
 
-        <div style={{ marginBottom: "32px" }}>
-          <Link
-            href="/"
-            className="verify-btn verify-btn-active"
-            style={{
-              display: "inline-block",
-              padding: "12px 28px",
-              textDecoration: "none",
-            }}
-          >
+        {/* Quick Search */}
+        <form
+          action="/"
+          method="GET"
+          className="search-bar"
+          style={{ maxWidth: "580px", marginBottom: "32px" }}
+        >
+          <input
+            type="text"
+            name="q"
+            className="search-input"
+            placeholder="Search companies, tickers, or financial topics..."
+          />
+          <button type="submit" className="search-button">
+            Search
+          </button>
+        </form>
+
+        {/* Golden Ratio Action Controls */}
+        <div className="not-found-actions">
+          <Link href="/" className="not-found-action-btn">
             ← Return to Live Feed
+          </Link>
+          <Link href="/about" className="not-found-secondary-btn">
+            About Our Methodology
           </Link>
         </div>
 
-        <h2>Recommended Market Sectors</h2>
-        <p style={{ marginBottom: "16px" }}>
-          Explore our AI-summarized coverage across active news categories:
+        {/* Market Sectors */}
+        <h2 className="not-found-section-title">Active Market Sectors</h2>
+        <p className="not-found-section-desc">
+          Jump directly to distilled, noise-free intelligence across active
+          financial coverage:
         </p>
 
-        <div className="category-chips" style={{ marginTop: "12px" }}>
-          <Link
-            href="/"
-            className="category-chip"
-            style={{ textDecoration: "none" }}
-          >
+        <div className="not-found-chips">
+          <Link href="/" className="not-found-chip">
             All News
           </Link>
-          {categories.map((cat) => (
+          {CATEGORIES.map((cat) => (
             <Link
               key={cat}
               href={`/?category=${encodeURIComponent(cat)}`}
-              className="category-chip"
-              style={{ textDecoration: "none" }}
+              className="not-found-chip"
             >
               {cat}
             </Link>
           ))}
-          <Link
-            href="/movies"
-            className="category-chip"
-            style={{ textDecoration: "none" }}
-          >
+          <Link href="/movies" className="not-found-chip">
             Movies
+          </Link>
+        </div>
+
+        {/* Footer Navigation Index */}
+        <div className="not-found-footer-links">
+          <Link href="/" className="not-found-footer-link">
+            Live Feed
+          </Link>
+          <Link href="/about" className="not-found-footer-link">
+            About GoFact
+          </Link>
+          <Link href="/contact" className="not-found-footer-link">
+            Contact Desk
+          </Link>
+          <Link href="/disclaimer" className="not-found-footer-link">
+            Financial Disclaimer
+          </Link>
+          <Link href="/privacy-policy" className="not-found-footer-link">
+            Privacy Policy
+          </Link>
+          <Link href="/terms-of-service" className="not-found-footer-link">
+            Terms of Service
           </Link>
         </div>
       </div>
