@@ -16,16 +16,16 @@
   --bg-secondary: #f0efed;
   --bg-card: #ffffff;
   --text-primary: #1a1a1a;
-  --text-secondary: #4a4a4a;
-  --text-tertiary: #7a7a7a;
+  --text-secondary: #3e3e3e;
+  --text-tertiary: #545454;
   --border-color: #d0d0d0;
-  --border-dark: #8a8580;
+  --border-dark: #6e6e6e;
   --accent: #8b0000;
   --accent-hover: #5c0000;
   --link-color: #1a4a8a;
   --link-hover: #0a2a5a;
   --tag-bg: #e8e6e2;
-  --tag-text: #3a3a3a;
+  --tag-text: #2a2a2a;
   --skeleton-from: #e8e6e2;
   --skeleton-to: #dbd8d3;
   --badge-ipo: #1a4a8a;
@@ -408,6 +408,7 @@ a:hover {
   overflow: hidden;
   border-bottom: 1px solid var(--border-color);
   background-color: var(--bg-secondary);
+  position: relative;
 }
 
 .news-card-image img {

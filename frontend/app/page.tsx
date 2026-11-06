@@ -187,7 +187,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
                     className="news-grid-item-dynamic"
                     style={{ "--dynamic-span": span } as React.CSSProperties}
                   >
-                    <ArticleCard article={article} />
+                    <ArticleCard article={article} priority={idx === 0} />
                   </div>
                 );
               })}

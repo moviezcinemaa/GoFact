@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import type { Article } from "@/types";
 
@@ -26,9 +28,18 @@ function formatTime(dateStr: string | null): string {
 }
 
 const PLACEHOLDER_IMAGE =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='360' viewBox='0 0 640 360'%3E%3Crect fill='%23e0dbd3' width='640' height='360'/%3E%3Ctext fill='%237a7a7a' font-family='Helvetica' font-size='18' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3ENo Image%3C/text%3E%3C/svg%3E";
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='360' viewBox='0 0 640 360'%3E%3Crect fill='%23e0dbd3' width='640' height='360'/%3E%3Ctext fill='%23545454' font-family='Helvetica' font-size='18' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3ENo Image%3C/text%3E%3C/svg%3E";
 
-export default function ArticleCard({ article }: { article: Article }) {
+interface ArticleCardProps {
+  article: Article;
+  priority?: boolean;
+}
+
+export default function ArticleCard({
+  article,
+  priority = false,
+}: ArticleCardProps) {
+  const [imgError, setImgError] = useState(false);
   const summaryPreview = article.detailed_summary || article.ai_summary || "";
   const truncated =
     summaryPreview.length > 120
@@ -47,18 +58,26 @@ export default function ArticleCard({ article }: { article: Article }) {
     ? `${linkPath}?from=${encodeURIComponent(fromQuery)}`
     : linkPath;
 
+  const imageSrc =
+    imgError || !article.image_url ? PLACEHOLDER_IMAGE : article.image_url;
+
   return (
     <div className="news-card">
       <Link href={href} className="news-card-image-link">
-        <div className="news-card-image">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={article.image_url || PLACEHOLDER_IMAGE}
+        <div
+          className="news-card-image"
+          style={{ position: "relative", width: "100%", aspectRatio: "16 / 9" }}
+        >
+          <Image
+            src={imageSrc}
             alt={article.original_headline || "Article thumbnail"}
-            loading="lazy"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = PLACEHOLDER_IMAGE;
-            }}
+            fill
+            sizes="(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 360px"
+            style={{ objectFit: "cover" }}
+            priority={priority}
+            loading={priority ? undefined : "lazy"}
+            onError={() => setImgError(true)}
+            unoptimized={imageSrc.startsWith("data:")}
           />
         </div>
       </Link>

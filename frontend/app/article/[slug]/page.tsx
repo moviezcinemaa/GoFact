@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import type { Article } from "@/types";
 import ArticleCard from "@/components/ArticleCard";
 import ArticleListItem from "@/components/ArticleListItem";
@@ -156,20 +157,26 @@ export default async function ArticlePage({
 
       {/* Hero image */}
       {article.image_url && (
-        <div className="article-hero-image">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+        <div
+          className="article-hero-image"
+          style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", overflow: "hidden" }}
+        >
+          <Image
             src={article.image_url}
             alt={article.original_headline || "Article image"}
+            fill
+            priority
+            sizes="(max-width: 768px) 100vw, 800px"
+            style={{ objectFit: "cover" }}
           />
-          {article.image_source && (
-            <div
-              className="image-caption"
-              style={{ fontSize: "0.8rem", color: "#666", marginTop: "4px" }}
-            >
-              Image source: {article.image_source}
-            </div>
-          )}
+        </div>
+      )}
+      {article.image_source && (
+        <div
+          className="image-caption"
+          style={{ fontSize: "0.8rem", color: "var(--text-tertiary)", marginTop: "6px" }}
+        >
+          Image source: {article.image_source}
         </div>
       )}
 
@@ -197,7 +204,7 @@ export default async function ArticlePage({
           <span
             style={{
               fontSize: "0.9rem",
-              color: "#666",
+              color: "var(--text-tertiary)",
               marginRight: "8px",
               fontWeight: 600,
             }}
