@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import type { Article } from "@/types";
 
 function formatTime(dateStr: string | null): string {
@@ -37,6 +38,12 @@ export default function ArticleListItem({ article }: { article: Article }) {
       ? `/movies/${urlParam}`
       : `/article/${urlParam}`;
 
+  const searchParams = useSearchParams();
+  const fromQuery = searchParams.toString();
+  const href = fromQuery
+    ? `${linkPath}?from=${encodeURIComponent(fromQuery)}`
+    : linkPath;
+
   return (
     <div className="news-list-item">
       <div className="news-list-item-body">
@@ -48,7 +55,7 @@ export default function ArticleListItem({ article }: { article: Article }) {
           <span className="article-time">{formatTime(article.published_at)}</span>
         </div>
         <h2 className="news-list-item-headline">
-          <Link href={linkPath}>{article.original_headline}</Link>
+          <Link href={href}>{article.original_headline}</Link>
         </h2>
         {truncated && <p className="news-list-item-preview">{truncated}</p>}
       </div>

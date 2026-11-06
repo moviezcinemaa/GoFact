@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import type { Article } from "@/types";
 
 function formatTime(dateStr: string | null): string {
@@ -40,9 +41,15 @@ export default function ArticleCard({ article }: { article: Article }) {
       ? `/movies/${urlParam}`
       : `/article/${urlParam}`;
 
+  const searchParams = useSearchParams();
+  const fromQuery = searchParams.toString();
+  const href = fromQuery
+    ? `${linkPath}?from=${encodeURIComponent(fromQuery)}`
+    : linkPath;
+
   return (
     <div className="news-card">
-      <Link href={linkPath} className="news-card-image-link">
+      <Link href={href} className="news-card-image-link">
         <div className="news-card-image">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -64,7 +71,7 @@ export default function ArticleCard({ article }: { article: Article }) {
           <span className="article-time">{formatTime(article.published_at)}</span>
         </div>
         <h2 className="news-card-headline">
-          <Link href={linkPath}>{article.original_headline}</Link>
+          <Link href={href}>{article.original_headline}</Link>
         </h2>
         {truncated && <p className="news-card-preview">{truncated}</p>}
       </div>

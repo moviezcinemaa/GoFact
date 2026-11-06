@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Article } from "@/types";
 import ArticleCard from "@/components/ArticleCard";
 import ArticleListItem from "@/components/ArticleListItem";
+import BackToFeed from "@/components/BackToFeed";
 import { notFound } from "next/navigation";
 
 export const revalidate = 300; // Cache on Edge CDN for 5 min (instant 10ms loads)
@@ -104,10 +105,15 @@ function splitIntoParagraphs(text: string): string[] {
 
 export default async function ArticlePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   const { slug } = await params;
+  const sParams = await searchParams;
+  const fromParam = sParams?.from || null;
+
   const [article, related] = await Promise.all([
     getArticle(slug),
     getRelated(slug),
@@ -139,10 +145,6 @@ export default async function ArticlePage({
   // Prevent script tag injection XSS
   const safeJsonLd = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
 
-  const backHref = article.category
-    ? `/?category=${encodeURIComponent(article.category)}`
-    : "/";
-
   return (
     <div className="article-detail">
       <script
@@ -150,9 +152,7 @@ export default async function ArticlePage({
         dangerouslySetInnerHTML={{ __html: safeJsonLd }}
       />
 
-      <Link href={backHref} className="back-link">
-        ← Back to feed
-      </Link>
+      <BackToFeed fromParam={fromParam} category={article.category} />
 
       {/* Hero image */}
       {article.image_url && (

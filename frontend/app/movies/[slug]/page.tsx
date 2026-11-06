@@ -4,9 +4,11 @@ import { notFound } from "next/navigation";
 import { PortableText } from "@portabletext/react";
 import { sanityClient, urlFor } from "@/lib/sanity";
 import type { MovieNews } from "@/types/sanity";
+import BackToFeed from "@/components/BackToFeed";
 
 interface MoviePageProps {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ from?: string }>;
 }
 
 export const revalidate = 300;
@@ -41,8 +43,14 @@ export async function generateMetadata({
   }
 }
 
-export default async function MovieEntryPage({ params }: MoviePageProps) {
+export default async function MovieEntryPage({
+  params,
+  searchParams,
+}: MoviePageProps) {
   const { slug } = await params;
+  const sParams = searchParams ? await searchParams : undefined;
+  const fromParam = sParams?.from || null;
+
   let movie: MovieNews | null = null;
   let relatedMovies: MovieNews[] = [];
 
@@ -67,9 +75,7 @@ export default async function MovieEntryPage({ params }: MoviePageProps) {
 
   return (
     <section className="movie-entry">
-      <Link href="/?category=Movies" className="back-link">
-        ← Back to feed
-      </Link>
+      <BackToFeed fromParam={fromParam} category="Movies" />
 
       <h1 className="movie-entry-title" style={{ fontFamily: "Georgia, serif", fontSize: "28px", margin: "16px 0" }}>
         {movie.title}
