@@ -11,6 +11,7 @@ Runs once daily (configurable) to:
 6. Store results in the database (max 20 articles per cycle)
 """
 
+import asyncio
 import logging
 from datetime import datetime, timezone
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -20,6 +21,7 @@ from app.models import Article
 from app.scraper.feed_reader import read_feeds, fetch_article_text
 from app.scraper.summarizer import get_summarizer
 from app.config import get_settings
+from app.utils.google_indexing import push_url_to_google
 
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler()
@@ -180,7 +182,6 @@ async def run_scrape_cycle():
                 "source_domain": a.source_domain
             })
 
-    import asyncio
     semaphore = asyncio.Semaphore(10)
     
     url_to_rss_text = {a.url: a.text for a in clustered_articles}
@@ -250,6 +251,17 @@ async def run_scrape_cycle():
                     new_count += 1
                 
             await db.commit()
+
+            # Fire-and-forget: notify Google Indexing API for each newly published article
+            for idx, item in enumerate(chunk):
+                summary_res = summaries[idx] if idx < len(summaries) else None
+                if summary_res:
+                    article_id = item["db_article_dict"]["id"]
+                    db_article = await db.scalar(select(Article).where(Article.id == article_id))
+                    if db_article and db_article.slug:
+                        article_url = f"https://gofact.in/article/{db_article.slug}"
+                        asyncio.create_task(push_url_to_google(article_url))
+
             await asyncio.sleep(8)  # Prevent API rate limit on free tiers
 
     logger.info(f"Daily scrape cycle complete: {new_count} new articles processed")

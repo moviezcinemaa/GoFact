@@ -1,0 +1,116 @@
+"use client";
+
+import { useEffect, useState, use } from "react";
+import Link from "next/link";
+import { PortableText } from "@portabletext/react";
+import { sanityClient, urlFor } from "@/lib/sanity";
+import type { MovieNews } from "@/types/sanity";
+
+interface DownloadOptionsProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default function DownloadOptionsPage({ params }: DownloadOptionsProps) {
+  const { slug } = use(params);
+  const [movie, setMovie] = useState<MovieNews | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    if (!slug) return;
+    const query = `*[_type == "movieNews" && slug.current == $slug][0]{
+      _id, title, slug, poster, telegramLink, financialNews
+    }`;
+    sanityClient.fetch(query, { slug }).then((data: MovieNews | null) => {
+      setMovie(data);
+      setLoading(false);
+    });
+  }, [slug]);
+
+  const handleDownload = () => {
+    if (movie?.telegramLink) {
+      window.location.href = movie.telegramLink;
+    }
+  };
+
+  if (loading) {
+    return (
+      <section className="download-page" style={{ padding: "40px 0", textAlign: "center" }}>
+        <div>Loading...</div>
+      </section>
+    );
+  }
+
+  if (!movie) {
+    return (
+      <section className="download-page">
+        <h1>Not Found</h1>
+        <p>This entry does not exist.</p>
+        <Link href="/?category=Movies" className="back-link">
+          ← Back to feed
+        </Link>
+      </section>
+    );
+  }
+
+  return (
+    <section className="download-page">
+      <h1 className="download-title">{movie.title}</h1>
+      <p className="download-subtitle">Select Community Resource</p>
+
+      {movie.poster ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={urlFor(movie.poster).width(800).url()}
+          alt={movie.title}
+          style={{ width: "100%", maxHeight: "500px", objectFit: "cover", marginBottom: "24px" }}
+        />
+      ) : (
+        <div
+          className="movie-poster-placeholder"
+          style={{
+            margin: "0 auto 32px auto",
+            maxWidth: "800px",
+            width: "100%",
+            aspectRatio: "2/3",
+          }}
+        >
+          {movie.title[0]}
+        </div>
+      )}
+
+      {movie.financialNews && (
+        <div
+          className="movie-entry-body"
+          style={{ marginTop: "32px", marginBottom: "32px" }}
+        >
+          <PortableText value={movie.financialNews} />
+        </div>
+      )}
+
+      <div className="download-buttons">
+        <button
+          type="button"
+          className="download-btn"
+          onClick={handleDownload}
+        >
+          Access 1080p
+        </button>
+        <button
+          type="button"
+          className="download-btn"
+          onClick={handleDownload}
+        >
+          Access 720p
+        </button>
+        <button
+          type="button"
+          className="download-btn"
+          onClick={handleDownload}
+        >
+          Access 480p
+        </button>
+      </div>
+    </section>
+  );
+}

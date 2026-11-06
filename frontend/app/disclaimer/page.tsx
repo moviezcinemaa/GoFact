@@ -1,0 +1,49 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Financial Disclaimer | GoFact",
+  description: "Legal and financial disclaimer regarding aggregated content on GoFact.",
+  alternates: { canonical: "https://gofact.in/disclaimer" },
+};
+
+export default function DisclaimerPage() {
+  return (
+    <div className="static-page">
+      <div className="static-doc-header" style={{ marginBottom: "24px", paddingBottom: "16px", borderBottom: "1px solid var(--border-color)" }}>
+        <div className="doc-meta" style={{ fontSize: "12px", color: "var(--text-tertiary)", textTransform: "uppercase" }}>
+          <strong>DOCUMENT ID</strong> DT-DSC-001
+        </div>
+        <div className="doc-meta" style={{ fontSize: "12px", color: "var(--text-tertiary)", textTransform: "uppercase" }}>
+          <strong>SUBJECT</strong> FINANCIAL DISCLAIMER
+        </div>
+        <div className="doc-meta" style={{ fontSize: "12px", color: "var(--text-tertiary)", textTransform: "uppercase" }}>
+          <strong>LAST UPDATED</strong> NOV 2026
+        </div>
+      </div>
+
+      <h1>Financial Disclaimer</h1>
+
+      <div className="static-doc-content">
+        <h2>1. Informational Purposes Only</h2>
+        <p>
+          The material presented on GoFact (gofact.in) is synthesized through automated data pipelines and AI summarization models strictly for general information and educational awareness. None of the content constitutes individualized investment advice, securities recommendations, or financial counseling.
+        </p>
+
+        <h2>2. Data Accuracy & Completeness</h2>
+        <p>
+          Market conditions fluctuate rapidly. While we source data from reputable public wire services, GoFact does not guarantee the absolute timeliness, accuracy, or completeness of stock quotes, earnings projections, or regulatory summaries.
+        </p>
+
+        <h2>3. Investment Risk</h2>
+        <p>
+          Trading equities, options, indices, commodities, and digital currencies involves substantial risk of capital loss. Readers must consult registered financial advisors before executing any financial transaction based on topics discussed herein.
+        </p>
+
+        <h2>4. Third-Party Advertising</h2>
+        <p>
+          GoFact displays advertisements provided by Google AdSense and other advertising networks. We do not evaluate or endorse any product, platform, or brokerage service advertised on the platform.
+        </p>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,44 @@
+export interface Article {
+  id: string;
+  original_headline: string;
+  original_url: string;
+  source_domain: string;
+  ai_summary: string | null;
+  market_impact: string | null;
+  published_at: string | null;
+  created_at: string;
+  image_url: string | null;
+  image_source: string | null;
+  category: string | null;
+  tags: string[] | null;
+  detailed_summary: string | null;
+  additional_sources: { url: string; domain: string; headline: string }[] | null;
+  slug?: string;
+}
+
+export interface ArticleListResponse {
+  articles: Article[];
+  total: number;
+  page: number;
+  per_page: number;
+}
+
+export interface SearchResponse {
+  articles: Article[];
+  total: number;
+  query: string;
+}
+
+export type Category =
+  | "All"
+  | "IPO"
+  | "Stocks"
+  | "Economy"
+  | "Global"
+  | "Crypto"
+  | "Commodities"
+  | "Finance"
+  | "Companies"
+  | "Indian Market"
+  | "Movies";
+
