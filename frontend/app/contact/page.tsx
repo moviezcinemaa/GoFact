@@ -1,29 +1,73 @@
-import type { Metadata } from "next";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Contact GoFact",
-  description: "Get in touch with the GoFact team for feedback, partnerships, or corrections.",
-  alternates: { canonical: "https://gofact.in/contact" },
-};
+import { useState } from "react";
+import type { FormEvent } from "react";
 
 export default function ContactPage() {
+  const [submitted, setSubmitted] = useState(false);
+
+  function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setSubmitted(true);
+  }
+
+  if (submitted) {
+    return (
+      <div className="static-page">
+        <h1 className="page-heading">Contact</h1>
+        <p>
+          Thank you for your message. We will respond within 2 business
+          days.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="static-page">
-      <h1>Contact Us</h1>
-      <p>
-        Have feedback, spotted an error, or want to discuss a partnership?
-        We&apos;d love to hear from you.
-      </p>
-      <h2>Email</h2>
-      <p>
-        <a href="mailto:hello@gofact.in">hello@gofact.in</a>
-      </p>
-      <h2>Editorial corrections</h2>
-      <p>
-        If you believe a summary is factually incorrect, please email us with the
-        article link and the correction. We aim to respond within 24 hours.
-      </p>
+      <div className="static-doc-header">
+        <div className="doc-meta"><strong>DOCUMENT ID</strong> DT-CNT-001</div>
+        <div className="doc-meta"><strong>SUBJECT</strong> CONTACT US</div>
+        <div className="doc-meta"><strong>STATUS</strong> ACCEPTING INQUIRIES</div>
+      </div>
+
+      <div className="static-doc-content">
+        <p>
+          Have a question, content removal request, or general inquiry? Send
+          us a message below or email{" "}
+          <a href="mailto:hello@gofact.in">hello@gofact.in</a>.
+        </p>
+
+        <form className="contact-form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="contact-name">Name</label>
+            <input
+              id="contact-name"
+              type="text"
+              name="name"
+              required
+              autoComplete="name"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="contact-email">Email</label>
+            <input
+              id="contact-email"
+              type="email"
+              name="email"
+              required
+              autoComplete="email"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="contact-message">Message</label>
+            <textarea id="contact-message" name="message" required></textarea>
+          </div>
+          <button type="submit" className="form-submit">
+            TRANSMIT MESSAGE
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
-

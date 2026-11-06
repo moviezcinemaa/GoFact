@@ -157,19 +157,19 @@ async def search_articles(
 ):
     """
     Full-text search using PostgreSQL's GIN index across headline and tags.
+    Uses plainto_tsquery to safely handle arbitrary user input without syntax errors or injection risks.
     """
-    # Sanitize query for tsquery — replace spaces with & for AND matching
-    sanitized = " & ".join(q.strip().split())
+    clean_q = q.strip()[:150]
 
     query = (
         select(Article)
         .where(
             and_(
                 Article.ai_summary.is_not(None),
-                text("articles_fts_vector(original_headline, tags) @@ to_tsquery('english', :q)")
+                text("articles_fts_vector(original_headline, tags) @@ plainto_tsquery('english', :q)")
             )
         )
-        .params(q=sanitized)
+        .params(q=clean_q)
         .order_by(desc(Article.published_at))
         .limit(50)
     )

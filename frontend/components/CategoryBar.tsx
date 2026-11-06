@@ -21,7 +21,8 @@ export default function CategoryBar({ active }: CategoryBarProps) {
       .then((r) => r.json())
       .then((cats: string[]) => {
         if (cats && cats.length > 0) {
-          const finalCats: Category[] = ["All" as Category, ...cats.map((c) => c as Category)];
+          const formatted = cats.map((c) => c as Category);
+          const finalCats: Category[] = ["All" as Category, ...formatted];
           if (!finalCats.includes("Movies" as Category)) {
             finalCats.push("Movies" as Category);
           }
@@ -40,7 +41,7 @@ export default function CategoryBar({ active }: CategoryBarProps) {
     } else {
       params.set("category", cat);
     }
-    params.delete("page"); // reset to page 1
+    params.delete("page");
     router.push(`/?${params.toString()}`);
     setIsOpen(false);
   }
@@ -52,10 +53,10 @@ export default function CategoryBar({ active }: CategoryBarProps) {
         className="category-accordion-toggle"
       >
         <span>Filter: {active}</span>
-        <span className={`toggle-icon${isOpen ? " open" : ""}`}>▼</span>
+        <span className={`toggle-icon ${isOpen ? "open" : ""}`}>▼</span>
       </button>
 
-      <div className={`category-accordion-content${isOpen ? " open" : ""}`}>
+      <div className={`category-accordion-content ${isOpen ? "open" : ""}`}>
         <div className="category-accordion-inner">
           <div className="category-chips">
             {categories.map((cat) => (
@@ -73,4 +74,3 @@ export default function CategoryBar({ active }: CategoryBarProps) {
     </div>
   );
 }
-

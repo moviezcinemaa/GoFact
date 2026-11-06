@@ -9,55 +9,49 @@ function formatTime(dateStr: string | null): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMin = Math.floor(diffMs / 60000);
+
   if (diffMin < 1) return "just now";
   if (diffMin < 60) return `${diffMin}m ago`;
   const diffHr = Math.floor(diffMin / 60);
   if (diffHr < 24) return `${diffHr}h ago`;
   const diffDay = Math.floor(diffHr / 24);
-  return diffDay < 7 ? `${diffDay}d ago` : date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  if (diffDay < 7) return `${diffDay}d ago`;
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+  });
 }
 
-const PLACEHOLDER_IMAGE =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='240' viewBox='0 0 320 240'%3E%3Crect fill='%23e0dbd3' width='320' height='240'/%3E%3C/svg%3E";
-
 export default function ArticleListItem({ article }: { article: Article }) {
+  const summaryPreview = article.detailed_summary || article.ai_summary || "";
+  const truncated =
+    summaryPreview.length > 180
+      ? summaryPreview.slice(0, 180).trimEnd() + "..."
+      : summaryPreview;
+
   const urlParam = article.slug || article.id;
   const linkPath =
-    article.category === "Movies" ? `/movies/${urlParam}` : `/article/${urlParam}`;
-
-  const preview = (article.detailed_summary || article.ai_summary || "").slice(0, 160);
+    article.category === "Movies"
+      ? `/movies/${urlParam}`
+      : `/article/${urlParam}`;
 
   return (
-    <div className="article-list-item">
-      {article.image_url && (
-        <Link href={linkPath} className="article-list-item-image">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={article.image_url || PLACEHOLDER_IMAGE}
-            alt={article.original_headline || "Article"}
-            loading="lazy"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = PLACEHOLDER_IMAGE;
-            }}
-          />
-        </Link>
-      )}
-      <div className="article-list-item-body">
-        <div className="article-list-item-meta">
+    <div className="news-list-item">
+      <div className="news-list-item-body">
+        <div className="news-card-meta">
           {article.category && (
-            <span className="category-badge" data-category={article.category}>
-              {article.category}
-            </span>
+            <span className="category-badge">{article.category}</span>
           )}
           <span className="article-source">{article.source_domain}</span>
           <span className="article-time">{formatTime(article.published_at)}</span>
         </div>
-        <h3 className="article-list-item-headline">
+        <h2 className="news-list-item-headline">
           <Link href={linkPath}>{article.original_headline}</Link>
-        </h3>
-        {preview && <p className="article-list-item-preview">{preview}</p>}
+        </h2>
+        {truncated && <p className="news-list-item-preview">{truncated}</p>}
       </div>
     </div>
   );
 }
-

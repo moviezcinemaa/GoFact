@@ -3,9 +3,6 @@
 import Link from "next/link";
 import type { Article } from "@/types";
 
-const PLACEHOLDER_IMAGE =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='360' viewBox='0 0 640 360'%3E%3Crect fill='%23e0dbd3' width='640' height='360'/%3E%3Ctext fill='%237a7a7a' font-family='Helvetica' font-size='18' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3ENo Image%3C/text%3E%3C/svg%3E";
-
 function formatTime(dateStr: string | null): string {
   if (!dateStr) return "";
   const date = new Date(dateStr);
@@ -26,6 +23,9 @@ function formatTime(dateStr: string | null): string {
     year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
   });
 }
+
+const PLACEHOLDER_IMAGE =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='360' viewBox='0 0 640 360'%3E%3Crect fill='%23e0dbd3' width='640' height='360'/%3E%3Ctext fill='%237a7a7a' font-family='Helvetica' font-size='18' x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle'%3ENo Image%3C/text%3E%3C/svg%3E";
 
 export default function ArticleCard({ article }: { article: Article }) {
   const summaryPreview = article.detailed_summary || article.ai_summary || "";
@@ -58,12 +58,7 @@ export default function ArticleCard({ article }: { article: Article }) {
       <div className="news-card-body">
         <div className="news-card-meta">
           {article.category && (
-            <span
-              className="category-badge"
-              data-category={article.category}
-            >
-              {article.category}
-            </span>
+            <span className="category-badge">{article.category}</span>
           )}
           <span className="article-source">{article.source_domain}</span>
           <span className="article-time">{formatTime(article.published_at)}</span>
@@ -76,4 +71,3 @@ export default function ArticleCard({ article }: { article: Article }) {
     </div>
   );
 }
-
