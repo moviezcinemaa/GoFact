@@ -5,11 +5,11 @@ export default function Loading() {
     <>
       {/* Page Heading Skeleton */}
       <div
-        className="bg-gray-200 rounded-none animate-pulse"
+        className="skeleton-block bg-gray-200 rounded-none animate-pulse"
         style={{ width: "360px", height: "30px", marginBottom: "10px" }}
       />
       <div
-        className="bg-gray-200 rounded-none animate-pulse"
+        className="skeleton-block bg-gray-200 rounded-none animate-pulse"
         style={{
           width: "100%",
           maxWidth: "680px",
@@ -20,7 +20,7 @@ export default function Loading() {
 
       {/* Search Bar Skeleton */}
       <div
-        className="bg-gray-200 rounded-none animate-pulse"
+        className="skeleton-block bg-gray-200 rounded-none animate-pulse"
         style={{
           width: "100%",
           maxWidth: "480px",
@@ -31,7 +31,7 @@ export default function Loading() {
 
       {/* Category Accordion Skeleton */}
       <div
-        className="bg-gray-200 rounded-none animate-pulse"
+        className="skeleton-block bg-gray-200 rounded-none animate-pulse"
         style={{ width: "100%", height: "42px", marginBottom: "28px" }}
       />
 
@@ -49,7 +49,7 @@ export default function Loading() {
             >
               {/* 16:9 Image Block */}
               <div
-                className="bg-gray-200 rounded-none animate-pulse"
+                className="skeleton-block bg-gray-200 rounded-none animate-pulse"
                 style={{ width: "100%", aspectRatio: "16 / 9" }}
               />
 
@@ -57,37 +57,37 @@ export default function Loading() {
               <div className="news-card-body" style={{ padding: "16px" }}>
                 {/* Meta Badge */}
                 <div
-                  className="bg-gray-200 rounded-none animate-pulse"
+                  className="skeleton-block bg-gray-200 rounded-none animate-pulse"
                   style={{ width: "80px", height: "14px", marginBottom: "12px" }}
                 />
 
                 {/* Headline Lines */}
                 <div
-                  className="bg-gray-200 rounded-none animate-pulse"
+                  className="skeleton-block bg-gray-200 rounded-none animate-pulse"
                   style={{ width: "95%", height: "18px", marginBottom: "8px" }}
                 />
                 <div
-                  className="bg-gray-200 rounded-none animate-pulse"
+                  className="skeleton-block bg-gray-200 rounded-none animate-pulse"
                   style={{ width: "70%", height: "18px", marginBottom: "16px" }}
                 />
 
                 {/* Summary Preview Lines */}
                 <div
-                  className="bg-gray-200 rounded-none animate-pulse"
+                  className="skeleton-block bg-gray-200 rounded-none animate-pulse"
                   style={{ width: "100%", height: "12px", marginBottom: "6px" }}
                 />
                 <div
-                  className="bg-gray-200 rounded-none animate-pulse"
+                  className="skeleton-block bg-gray-200 rounded-none animate-pulse"
                   style={{ width: "90%", height: "12px", marginBottom: "6px" }}
                 />
                 <div
-                  className="bg-gray-200 rounded-none animate-pulse"
+                  className="skeleton-block bg-gray-200 rounded-none animate-pulse"
                   style={{ width: "65%", height: "12px", marginBottom: "16px" }}
                 />
 
                 {/* Footer Time */}
                 <div
-                  className="bg-gray-200 rounded-none animate-pulse"
+                  className="skeleton-block bg-gray-200 rounded-none animate-pulse"
                   style={{ width: "60px", height: "12px" }}
                 />
               </div>
@@ -98,3 +98,4 @@ export default function Loading() {
     </>
   );
 }
+

@@ -72,7 +72,7 @@ export default function ArticleCard({
             src={imageSrc}
             alt={article.original_headline || "Article thumbnail"}
             fill
-            sizes="(max-width: 600px) 100vw, (max-width: 1024px) 50vw, 360px"
+            sizes="(max-width: 600px) 380px, (max-width: 1024px) 360px, 340px"
             style={{ objectFit: "cover" }}
             priority={priority}
             loading={priority ? undefined : "lazy"}

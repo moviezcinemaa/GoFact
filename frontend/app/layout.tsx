@@ -68,13 +68,13 @@ export default function RootLayout({
       <body>
         <NextTopLoader
           color="#000000"
-          initialPosition={0.08}
-          crawlSpeed={200}
+          initialPosition={0.25}
+          crawlSpeed={100}
           height={2}
           crawl={true}
           showSpinner={false}
-          easing="linear"
-          speed={200}
+          easing="ease"
+          speed={150}
           shadow={false}
           zIndex={99999}
         />

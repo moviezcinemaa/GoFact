@@ -60,8 +60,10 @@ export default function VerifyPage({ params }: VerifyPageProps) {
 
   if (loading) {
     return (
-      <section className="verify-page" style={{ padding: "40px 0", textAlign: "center" }}>
-        <div>Loading...</div>
+      <section className="verify-page" style={{ maxWidth: "760px", margin: "0 auto" }}>
+        <div className="skeleton-block" style={{ width: "65%", height: "28px", marginBottom: "20px" }} />
+        <div className="skeleton-block" style={{ width: "100%", height: "260px", marginBottom: "24px" }} />
+        <div className="skeleton-block" style={{ width: "45%", height: "18px" }} />
       </section>
     );
   }

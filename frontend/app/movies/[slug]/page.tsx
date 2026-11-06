@@ -12,6 +12,19 @@ interface MoviePageProps {
 }
 
 export const revalidate = 300;
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  try {
+    const slugs = await sanityClient.fetch(
+      `*[_type == "movieNews" && defined(slug.current)]{ "slug": slug.current }`
+    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (slugs || []).map((s: any) => ({ slug: s.slug }));
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata({
   params,

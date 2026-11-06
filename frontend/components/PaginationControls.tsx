@@ -88,3 +88,4 @@ export default function PaginationControls({
     </div>
   );
 }
+

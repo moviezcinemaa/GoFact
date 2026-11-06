@@ -35,8 +35,10 @@ export default function DownloadOptionsPage({ params }: DownloadOptionsProps) {
 
   if (loading) {
     return (
-      <section className="download-page" style={{ padding: "40px 0", textAlign: "center" }}>
-        <div>Loading...</div>
+      <section className="download-page">
+        <div className="skeleton-block" style={{ width: "60%", height: "28px", marginBottom: "14px" }} />
+        <div className="skeleton-block" style={{ width: "40%", height: "16px", marginBottom: "28px" }} />
+        <div className="skeleton-block" style={{ width: "100%", height: "220px" }} />
       </section>
     );
   }

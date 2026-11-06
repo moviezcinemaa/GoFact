@@ -8,15 +8,32 @@ import BackToFeed from "@/components/BackToFeed";
 import { notFound } from "next/navigation";
 
 export const revalidate = 300; // Cache on Edge CDN for 5 min (instant 10ms loads)
+export const dynamicParams = true; // Automatically ISR-render and cache newly published articles
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://gofact-backend.onrender.com";
+
+export async function generateStaticParams() {
+  try {
+    const res = await fetch(`${API_BASE}/api/articles?per_page=50`, {
+      next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(4000),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.articles || []).map((a: Article) => ({
+      slug: a.slug || a.id,
+    }));
+  } catch {
+    return [];
+  }
+}
 
 async function getArticle(slug: string): Promise<Article | null> {
   try {
     const res = await fetch(`${API_BASE}/api/articles/${slug}`, {
       next: { revalidate: 3600 },
-      signal: AbortSignal.timeout(6000),
+      signal: AbortSignal.timeout(3500),
     });
     if (res.status === 404) return null;
     if (!res.ok) throw new Error("API error");
@@ -30,7 +47,7 @@ async function getRelated(slug: string): Promise<Article[]> {
   try {
     const res = await fetch(`${API_BASE}/api/articles/${slug}/related`, {
       next: { revalidate: 3600 },
-      signal: AbortSignal.timeout(6000),
+      signal: AbortSignal.timeout(3500),
     });
     if (!res.ok) return [];
     return res.json();
