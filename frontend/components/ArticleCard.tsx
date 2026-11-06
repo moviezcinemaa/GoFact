@@ -76,6 +76,7 @@ export default function ArticleCard({
             style={{ objectFit: "cover" }}
             priority={priority}
             loading={priority ? undefined : "lazy"}
+            quality={70}
             onError={() => setImgError(true)}
             unoptimized={imageSrc.startsWith("data:")}
           />
@@ -87,7 +88,9 @@ export default function ArticleCard({
             <span className="category-badge">{article.category}</span>
           )}
           <span className="article-source">{article.source_domain}</span>
-          <span className="article-time">{formatTime(article.published_at)}</span>
+          <span className="article-time" suppressHydrationWarning>
+            {formatTime(article.published_at)}
+          </span>
         </div>
         <h2 className="news-card-headline">
           <Link href={href}>{article.original_headline}</Link>

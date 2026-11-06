@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { sanityClient, urlFor } from "@/lib/sanity";
 import type { MovieNews } from "@/types/sanity";
 
@@ -60,12 +61,16 @@ export default async function MoviesFeedPage() {
                 style={{ textDecoration: "none" }}
               >
                 {movie.poster ? (
-                  <div className="news-card-image">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={urlFor(movie.poster).width(800).url()}
+                  <div className="news-card-image" style={{ position: "relative", width: "100%", aspectRatio: "16 / 9" }}>
+                    <Image
+                      src={urlFor(movie.poster).width(600).url()}
                       alt={movie.title}
-                      loading="lazy"
+                      fill
+                      sizes="(max-width: 600px) 380px, (max-width: 1024px) 360px, 340px"
+                      style={{ objectFit: "cover" }}
+                      loading={idx === 0 ? undefined : "lazy"}
+                      priority={idx === 0}
+                      quality={70}
                     />
                   </div>
                 ) : (

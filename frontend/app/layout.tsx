@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Script from "next/script";
-import NextTopLoader from "nextjs-toploader";
+import TopLoader from "@/components/TopLoader";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://gofact.in"),
@@ -15,11 +16,14 @@ export const metadata: Metadata = {
     "Real-time AI-summarized stock market news. IPO, Nifty, Sensex, crypto, commodities — curated daily.",
   icons: {
     icon: [
-      { url: "/favicon.jpg", type: "image/jpeg" },
+      { url: "/logo.webp", type: "image/webp" },
       { url: "/favicon.ico", sizes: "any" },
     ],
-    shortcut: "/favicon.jpg",
-    apple: "/favicon.jpg",
+    shortcut: "/logo.webp",
+    apple: "/logo.png",
+  },
+  other: {
+    "google-adsense-account": "ca-pub-5744613008467521",
   },
   openGraph: {
     siteName: "GoFact",
@@ -46,8 +50,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        <meta name="google-adsense-account" content="ca-pub-5744613008467521" />
+      <body>
+        <Suspense fallback={null}>
+          <TopLoader />
+        </Suspense>
+        <div className="site-wrapper">
+          <Header />
+          <main className="site-main">{children}</main>
+          <Footer />
+        </div>
         {/* Google AdSense */}
         <Script
           async
@@ -64,25 +75,6 @@ export default function RootLayout({
         <Script id="ga-init" strategy="lazyOnload">
           {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-CWG18W9HGQ');`}
         </Script>
-      </head>
-      <body>
-        <NextTopLoader
-          color="#000000"
-          initialPosition={0.25}
-          crawlSpeed={100}
-          height={2}
-          crawl={true}
-          showSpinner={false}
-          easing="ease"
-          speed={150}
-          shadow={false}
-          zIndex={99999}
-        />
-        <div className="site-wrapper">
-          <Header />
-          <main className="site-main">{children}</main>
-          <Footer />
-        </div>
       </body>
     </html>
   );

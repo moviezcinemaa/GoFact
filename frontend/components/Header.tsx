@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 export default function Header() {
@@ -12,8 +13,14 @@ export default function Header() {
     <header className="site-header">
       <div className="header-inner">
         <Link href="/" className="site-title">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/favicon.jpg" alt="GoFact Logo" className="site-logo" />
+          <Image
+            src="/logo.webp"
+            alt="GoFact Logo"
+            width={28}
+            height={28}
+            priority
+            className="site-logo"
+          />
           <span>GoFact</span>
         </Link>
 

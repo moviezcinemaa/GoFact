@@ -6,7 +6,7 @@ export default function Footer() {
   return (
     <footer className="site-footer">
       <div className="footer-inner">
-        <span>&copy; {year} GoFact</span>
+        <span suppressHydrationWarning>&copy; {year} GoFact</span>
         <div className="footer-links">
           <Link href="/privacy-policy">Privacy</Link>
           <Link href="/terms-of-service">Terms</Link>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { PortableText } from "@portabletext/react";
 import { sanityClient, urlFor } from "@/lib/sanity";
@@ -95,12 +96,15 @@ export default async function MovieEntryPage({
       </h1>
 
       {movie.poster && (
-        <div className="article-hero-image" style={{ marginBottom: "24px" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+        <div className="article-hero-image" style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", marginBottom: "24px", overflow: "hidden" }}>
+          <Image
             src={urlFor(movie.poster).width(800).url()}
             alt={movie.title}
-            style={{ width: "100%", maxHeight: "500px", objectFit: "cover" }}
+            fill
+            priority
+            quality={75}
+            sizes="(max-width: 768px) 100vw, 800px"
+            style={{ objectFit: "cover" }}
           />
         </div>
       )}
@@ -147,12 +151,15 @@ export default async function MovieEntryPage({
                     style={{ textDecoration: "none" }}
                   >
                     {relMovie.poster ? (
-                      <div className="news-card-image">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={urlFor(relMovie.poster).width(800).url()}
+                      <div className="news-card-image" style={{ position: "relative", width: "100%", aspectRatio: "16 / 9" }}>
+                        <Image
+                          src={urlFor(relMovie.poster).width(600).url()}
                           alt={relMovie.title}
+                          fill
+                          sizes="(max-width: 600px) 380px, 340px"
+                          style={{ objectFit: "cover" }}
                           loading="lazy"
+                          quality={70}
                         />
                       </div>
                     ) : (

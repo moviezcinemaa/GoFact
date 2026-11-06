@@ -183,6 +183,7 @@ export default async function ArticlePage({
             alt={article.original_headline || "Article image"}
             fill
             priority
+            quality={75}
             sizes="(max-width: 768px) 100vw, 800px"
             style={{ objectFit: "cover" }}
           />
@@ -202,7 +203,7 @@ export default async function ArticlePage({
           <span className="category-badge">{article.category}</span>
         )}
         <span className="article-source">{article.source_domain}</span>
-        <span className="article-time">{formatDate(article.published_at)}</span>
+        <span className="article-time" suppressHydrationWarning>{formatDate(article.published_at)}</span>
       </div>
 
       <h1 className="article-detail-headline">{article.original_headline}</h1>

@@ -1,5 +1,18 @@
 import type { NextConfig } from "next";
 
+const cspHeader = `
+  default-src 'self';
+  script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://*.google.com https://*.googlesyndication.com https://*.doubleclick.net https://adservice.google.com https://adservice.google.co.in;
+  style-src 'self' 'unsafe-inline';
+  img-src 'self' data: blob: https:;
+  font-src 'self';
+  connect-src 'self' https://gofact-backend.onrender.com https://*.sanity.io https://*.google-analytics.com https://*.googlesyndication.com https://*.doubleclick.net https://pagead2.googlesyndication.com https://*.google.com;
+  frame-src https://*.google.com https://*.googlesyndication.com https://*.doubleclick.net https://googleads.g.doubleclick.net;
+  object-src 'none';
+  base-uri 'self';
+  form-action 'self';
+`.replace(/\s{2,}/g, " ").trim();
+
 const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
@@ -28,14 +41,24 @@ const nextConfig: NextConfig = {
           { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
           { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
           { key: "X-DNS-Prefetch-Control", value: "on" },
+          { key: "Content-Security-Policy", value: cspHeader },
         ],
       },
       {
-        source: "/(favicon.jpg|favicon.ico|icon.png|apple-icon.png)",
+        source: "/:all*(jpg|jpeg|png|webp|svg|ico|txt)",
         headers: [
           {
             key: "Cache-Control",
             value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        source: "/",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=60, stale-while-revalidate=300",
           },
         ],
       },

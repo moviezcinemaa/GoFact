@@ -110,7 +110,7 @@ export default function VerifyPage({ params }: VerifyPageProps) {
 
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/yt-reactions-placeholder.jpg"
+        src="/yt-reactions-placeholder.webp"
         alt="Reactions placeholder"
         style={{
           width: "100%",
