@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from uuid import UUID
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, BackgroundTasks
 from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc, text, or_, and_, any_
@@ -37,7 +37,7 @@ async def health_check():
 async def list_articles(
     request: Request,
     page: int = Query(1, ge=1),
-    per_page: int = Query(20, ge=1, le=100),
+    per_page: int = Query(20, ge=1, le=500),
     source: Optional[str] = Query(None),
     category: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
@@ -309,3 +309,43 @@ async def get_rss_feed(db: AsyncSession = Depends(get_db)):
     </rss>"""
     
     return Response(content=rss_content, media_type="application/xml")
+
+
+@router.post("/trigger-scrape")
+@router.get("/trigger-scrape")
+async def trigger_scrape(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    key: Optional[str] = Query(None),
+):
+    """Manually or externally trigger a scrape-and-summarize cycle.
+    Secured by X-CRON-KEY header or ?key= query parameter.
+    """
+    cron_key = request.headers.get("X-CRON-KEY") or key
+    if not settings.cron_secret or cron_key != settings.cron_secret:
+        raise HTTPException(
+            status_code=401,
+            detail="Unauthorized: invalid or missing X-CRON-KEY header or key query parameter",
+        )
+
+    from app.scraper.scheduler import run_scrape_cycle
+
+    async def execute_and_clear_cache():
+        try:
+            from app.main import logger
+            logger.info("External trigger received: starting scrape cycle...")
+            await run_scrape_cycle()
+            from fastapi_cache import FastAPICache
+            await FastAPICache.clear()
+            logger.info("External trigger complete: scrape finished and cache cleared.")
+        except Exception as e:
+            from app.main import logger
+            logger.error(f"Error executing triggered scrape cycle: {e}")
+
+    background_tasks.add_task(execute_and_clear_cache)
+    return {
+        "status": "ok",
+        "message": "Scrape cycle started in background",
+        "timestamp": datetime.now(timezone.utc),
+    }
+

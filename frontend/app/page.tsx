@@ -9,7 +9,8 @@ import PaginationControls from "@/components/PaginationControls";
 import Link from "next/link";
 import { sanityClient, urlFor } from "@/lib/sanity";
 
-export const revalidate = 60; // Cache on Vercel Global Edge CDN for 60s (Instant 10ms loads)
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "GoFact | Global Financial Intelligence & Real-Time Market News",
@@ -63,8 +64,8 @@ async function fetchArticlesFromBackend(
       path += `&category=${encodeURIComponent(category)}`;
     }
     const res = await fetch(path, {
-      next: { revalidate: 60 },
-      signal: AbortSignal.timeout(6000), // 6-second timeout prevents slow blocking
+      cache: "no-store",
+      signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) throw new Error("API error");
     return res.json();

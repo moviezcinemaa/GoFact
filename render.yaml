@@ -24,4 +24,18 @@ services:
         sync: false
       - key: GOOGLE_INDEXING_SA_JSON
         sync: false
+      - key: CRON_SECRET
+        sync: false
 
+  - type: web
+    name: gofact-frontend
+    env: node
+    plan: free
+    rootDir: frontend
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm run start"
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: NEXT_PUBLIC_API_URL
+        value: "https://gofact-backend.onrender.com"

@@ -26,8 +26,8 @@ from app.utils.google_indexing import push_url_to_google
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler()
 
-# Maximum articles to process per scrape cycle (top headlines only)
-MAX_ARTICLES_PER_CYCLE = 20
+# Maximum articles to process per scrape cycle
+MAX_ARTICLES_PER_CYCLE = 50
 
 # Retention: keep published articles for 90 days (protect SEO indexing)
 RETENTION_DAYS = 90
@@ -72,19 +72,20 @@ async def run_scrape_cycle():
     import re
     
     def calculate_similarity(h1, h2):
-        # 1. Standard difflib
-        ratio = difflib.SequenceMatcher(None, h1.lower(), h2.lower()).ratio()
-        if ratio > 0.6:
+        # 1. Standard difflib: strict 92%+ match required for headline clustering
+        # Prevents discarding distinct stories that simply share common market terms
+        ratio = difflib.SequenceMatcher(None, h1.lower().strip(), h2.lower().strip()).ratio()
+        if ratio >= 0.92:
             return True
             
-        # 2. Word overlap (Jaccard-like) for rearranged headlines
+        # 2. Word overlap (Jaccard-like): require 85%+ overlap of significant words
         w1 = set(re.findall(r'\w{3,}', h1.lower()))
         w2 = set(re.findall(r'\w{3,}', h2.lower()))
         if not w1 or not w2:
             return False
         overlap = len(w1 & w2)
-        jaccard = overlap / (len(w1 | w2))
-        return jaccard > 0.35
+        jaccard = overlap / len(w1 | w2)
+        return jaccard >= 0.85
 
     clustered_articles = []
     for article in feed_articles:
@@ -263,6 +264,13 @@ async def run_scrape_cycle():
                         asyncio.create_task(push_url_to_google(article_url))
 
             await asyncio.sleep(8)  # Prevent API rate limit on free tiers
+
+    try:
+        from fastapi_cache import FastAPICache
+        await FastAPICache.clear()
+        logger.info("FastAPICache cleared after scrape cycle.")
+    except Exception:
+        pass
 
     logger.info(f"Daily scrape cycle complete: {new_count} new articles processed")
 

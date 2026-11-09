@@ -14,8 +14,9 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     openrouter_api_key: str = ""
 
-    # Scraper
-    scrape_interval_minutes: int = 1440  # Once daily (24 hours)
+    # Scraper & Cron
+    scrape_interval_minutes: int = 120  # Runs every 2 hours
+    cron_secret: str = "gofact-cron-secret-2026"  # X-CRON-KEY for external trigger endpoint
 
     # App
     environment: str = "development"

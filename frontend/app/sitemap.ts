@@ -21,7 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let articleEntries: MetadataRoute.Sitemap = [];
   try {
     const res = await fetch(
-      `${API_BASE}/api/articles?page=1&per_page=100`,
+      `${API_BASE}/api/articles?page=1&per_page=500`,
       { cache: "no-store", signal: AbortSignal.timeout(10000) }
     );
     if (res.ok) {

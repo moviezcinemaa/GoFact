@@ -14,7 +14,8 @@ const QUERY = `*[_type == "movieNews"] | order(_createdAt desc) {
   _id, title, slug, poster, telegramLink, "summaryPreview": pt::text(financialNews)
 }`;
 
-export const revalidate = 300; // ISR 5 min
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function MoviesFeedPage() {
   let movies: MovieNews[] = [];
