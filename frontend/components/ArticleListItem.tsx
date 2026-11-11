@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import type { Article } from "@/types";
 
 function formatTime(dateStr: string | null): string {
@@ -25,7 +22,13 @@ function formatTime(dateStr: string | null): string {
   });
 }
 
-export default function ArticleListItem({ article }: { article: Article }) {
+export default function ArticleListItem({
+  article,
+  fromQuery,
+}: {
+  article: Article;
+  fromQuery?: string;
+}) {
   const summaryPreview = article.detailed_summary || article.ai_summary || "";
   const truncated =
     summaryPreview.length > 180
@@ -38,8 +41,6 @@ export default function ArticleListItem({ article }: { article: Article }) {
       ? `/movies/${urlParam}`
       : `/article/${urlParam}`;
 
-  const searchParams = useSearchParams();
-  const fromQuery = searchParams.toString();
   const href = fromQuery
     ? `${linkPath}?from=${encodeURIComponent(fromQuery)}`
     : linkPath;

@@ -26,8 +26,8 @@ from app.utils.google_indexing import push_url_to_google
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler()
 
-# Maximum articles to process per scrape cycle
-MAX_ARTICLES_PER_CYCLE = 50
+# Maximum articles to process per scrape cycle (Curated Top 20 Daily Digest)
+MAX_ARTICLES_PER_CYCLE = 20
 
 # Retention: keep published articles for 90 days (protect SEO indexing)
 RETENTION_DAYS = 90
@@ -87,17 +87,23 @@ async def run_scrape_cycle():
         jaccard = overlap / len(w1 | w2)
         return jaccard >= 0.85
 
+    # Topic clustering dictionary: maps primary headline -> list of article texts from all sources
+    topic_clusters: dict[str, list[str]] = {}
     clustered_articles = []
     for article in feed_articles:
         found_cluster = False
         for cluster in clustered_articles:
             if calculate_similarity(article.headline, cluster.headline):
                 cluster.additional_sources.append({"url": article.url, "domain": article.source_domain, "headline": article.headline})
-                # Append text to give LLM more context
+                # Add text to topic_clusters and append to cluster text for multi-source synthesis
+                if cluster.headline not in topic_clusters:
+                    topic_clusters[cluster.headline] = [cluster.text]
+                topic_clusters[cluster.headline].append(article.text)
                 cluster.text += f"\n\n--- Source: {article.source_domain} ---\n" + article.text
                 found_cluster = True
                 break
         if not found_cluster:
+            topic_clusters[article.headline] = [article.text]
             clustered_articles.append(article)
 
     # Step 3: Keep only top N articles (sorted by publish date, newest first)

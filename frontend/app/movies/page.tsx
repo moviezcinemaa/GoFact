@@ -1,8 +1,15 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import Image from "next/image";
+import { Suspense } from "react";
 import { sanityClient, urlFor } from "@/lib/sanity";
-import type { MovieNews } from "@/types/sanity";
+import type { FeedItem } from "@/types";
+import { feedItemToArticle } from "@/types";
+import ArticleCard from "@/components/ArticleCard";
+import ArticleListItem from "@/components/ArticleListItem";
+import CategoryBar from "@/components/CategoryBar";
+import PaginationControls from "@/components/PaginationControls";
+
+// Netlify & Edge Cache Alignment: 24-hour static cache revalidation
+export const revalidate = 86400;
 
 export const metadata: Metadata = {
   title: "Movies | GoFact",
@@ -11,88 +18,139 @@ export const metadata: Metadata = {
 };
 
 const QUERY = `*[_type == "movieNews"] | order(_createdAt desc) {
-  _id, title, slug, poster, telegramLink, "summaryPreview": pt::text(financialNews)
+  _id, title, slug, poster, telegramLink, "summaryPreview": pt::text(financialNews), _createdAt
 }`;
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+const PER_PAGE = 18;
 
-export default async function MoviesFeedPage() {
-  let movies: MovieNews[] = [];
+interface MoviesFeedPageProps {
+  searchParams?: Promise<{ page?: string }>;
+}
+
+export default async function MoviesFeedPage({ searchParams }: MoviesFeedPageProps) {
+  const params = searchParams ? await searchParams : undefined;
+  const page = Math.max(1, parseInt(params?.page || "1", 10));
+
+  let rawMovies: any[] = [];
   try {
-    movies = await sanityClient.fetch(QUERY);
+    rawMovies = (await sanityClient.fetch(QUERY, {}, { next: { revalidate: 86400 } })) || [];
   } catch (err) {
     console.error("Failed to fetch movies from Sanity", err);
   }
 
-  if (!movies || movies.length === 0) {
-    return (
-      <section className="movies-feed">
-        <h1 className="page-heading">Movies</h1>
-        <p className="empty-state">No entries yet.</p>
-      </section>
-    );
-  }
+  const movieItems: FeedItem[] = rawMovies.map((m: any) => ({
+    id: m.slug?.current || m._id,
+    title: m.title,
+    slug: m.slug?.current || m._id,
+    publishedAt: m._createdAt || new Date().toISOString(),
+    imageUrl: m.poster ? urlFor(m.poster).width(800).url() : null,
+    category: "Movies",
+    type: "movie",
+    aiSummary: m.summaryPreview ? m.summaryPreview.substring(0, 150) + "..." : null,
+    detailedSummary: null,
+    sourceDomain: "GoFact Movies",
+    imageSource: null,
+    tags: ["Movies"],
+    originalUrl: `/movies/${m.slug?.current || m._id}`,
+  }));
+
+  // Global timestamp sort descending
+  movieItems.sort((a, b) => {
+    const timeA = new Date(a.publishedAt).getTime();
+    const timeB = new Date(b.publishedAt).getTime();
+    return timeB - timeA;
+  });
+
+  const total = movieItems.length;
+  const totalPages = Math.ceil(total / PER_PAGE);
+
+  /**
+   * Phase 4 & 5: Page-Level Image Sorting Algorithm for Movies
+   * 1. Slicing happens first from the global timeline.
+   * 2. Image Anchoring: Shift items with valid imageUrl to the top,
+   *    and items without image to the bottom.
+   * 3. Preserve Chronology within Groups: strictly sorted by publishedAt descending.
+   */
+  const startIndex = (page - 1) * PER_PAGE;
+  const endIndex = startIndex + PER_PAGE;
+  const currentPageItems = movieItems.slice(startIndex, endIndex);
+
+  const withImage = currentPageItems
+    .filter((item) => Boolean(item.imageUrl))
+    .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+
+  const withoutImage = currentPageItems
+    .filter((item) => !item.imageUrl)
+    .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+
+  const fromQuery = page > 1 ? `page=${page}` : "";
 
   return (
     <section className="movies-feed">
       <h1 className="page-heading">Movies</h1>
       <p className="page-subheading">Entertainment & movie insights</p>
 
-      <div className="news-grid-dynamic">
-        {movies.map((movie, idx) => {
-          const rowIdx = Math.floor(idx / 3);
-          const itemsInThisRow = Math.min(3, movies.length - rowIdx * 3);
-          const span = itemsInThisRow === 1 ? 6 : itemsInThisRow === 2 ? 3 : 2;
+      <Suspense fallback={null}>
+        <CategoryBar active="Movies" />
+      </Suspense>
 
-          let truncated = movie.summaryPreview || "";
-          if (truncated.length > 120) {
-            truncated = truncated.slice(0, 120).trimEnd() + "...";
-          }
+      {currentPageItems.length === 0 ? (
+        <p className="empty-state">No entries yet.</p>
+      ) : (
+        <>
+          {/* Top section: Articles with images (Dynamic Grid, Anchored to Top) */}
+          {withImage.length > 0 && (
+            <div className="news-grid-dynamic">
+              {withImage.map((item, idx) => {
+                const article = feedItemToArticle(item);
+                const rowIdx = Math.floor(idx / 3);
+                const itemsInThisRow = Math.min(3, withImage.length - rowIdx * 3);
+                let span = 2;
+                if (itemsInThisRow === 1) span = 6;
+                else if (itemsInThisRow === 2) span = 3;
 
-          return (
-            <div
-              key={movie._id}
-              className="news-grid-item-dynamic"
-              style={{ "--dynamic-span": span } as React.CSSProperties}
-            >
-              <Link
-                href={`/movies/${movie.slug.current}`}
-                className="news-card"
-                style={{ textDecoration: "none" }}
-              >
-                {movie.poster ? (
-                  <div className="news-card-image" style={{ position: "relative", width: "100%", aspectRatio: "16 / 9" }}>
-                    <Image
-                      src={urlFor(movie.poster).width(600).url()}
-                      alt={movie.title}
-                      fill
-                      sizes="(max-width: 600px) 380px, (max-width: 1024px) 360px, 340px"
-                      style={{ objectFit: "cover" }}
-                      loading={idx === 0 ? undefined : "lazy"}
+                return (
+                  <div
+                    key={item.id}
+                    className="news-grid-item-dynamic"
+                    style={{ "--dynamic-span": span } as React.CSSProperties}
+                  >
+                    <ArticleCard
+                      article={article}
                       priority={idx === 0}
-                      quality={70}
+                      fromQuery={fromQuery}
                     />
                   </div>
-                ) : (
-                  <div className="movie-poster-placeholder">
-                    {movie.title[0]}
-                  </div>
-                )}
-                <div className="news-card-body">
-                  <h2 className="news-card-headline" style={{ margin: 0 }}>
-                    {movie.title}
-                  </h2>
-                  {truncated && (
-                    <p className="news-card-preview">{truncated}</p>
-                  )}
-                </div>
-              </Link>
+                );
+              })}
             </div>
-          );
-        })}
-      </div>
+          )}
+
+          {/* Bottom section: Articles without images (Anchored to Bottom) */}
+          {withoutImage.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              {withoutImage.map((item) => (
+                <ArticleListItem
+                  key={item.id}
+                  article={feedItemToArticle(item)}
+                  fromQuery={fromQuery}
+                />
+              ))}
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <Suspense fallback={null}>
+              <PaginationControls
+                page={page}
+                totalPages={totalPages}
+                category="Movies"
+                q=""
+              />
+            </Suspense>
+          )}
+        </>
+      )}
     </section>
   );
 }
-

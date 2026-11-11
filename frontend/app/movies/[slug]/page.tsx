@@ -12,14 +12,15 @@ interface MoviePageProps {
   searchParams?: Promise<{ from?: string }>;
 }
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 86400; // 24-hour cache alignment
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
   try {
     const slugs = await sanityClient.fetch(
-      `*[_type == "movieNews" && defined(slug.current)]{ "slug": slug.current }`
+      `*[_type == "movieNews" && defined(slug.current)]{ "slug": slug.current }`,
+      {},
+      { next: { revalidate: 86400 } }
     );
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (slugs || []).map((s: any) => ({ slug: s.slug }));
@@ -35,7 +36,8 @@ export async function generateMetadata({
   try {
     const movie: MovieNews = await sanityClient.fetch(
       `*[_type == "movieNews" && slug.current == $slug][0]`,
-      { slug }
+      { slug },
+      { next: { revalidate: 86400 } }
     );
     if (!movie) return { title: "Movie not found" };
 
@@ -76,8 +78,8 @@ export default async function MovieEntryPage({
     }`;
 
     const [movieData, relatedData] = await Promise.all([
-      sanityClient.fetch(query, { slug }),
-      sanityClient.fetch(relatedQuery, { slug }),
+      sanityClient.fetch(query, { slug }, { next: { revalidate: 86400 } }),
+      sanityClient.fetch(relatedQuery, { slug }, { next: { revalidate: 86400 } }),
     ]);
 
     movie = movieData;

@@ -2,12 +2,12 @@ import type { NextConfig } from "next";
 
 const cspHeader = `
   default-src 'self';
-  script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://*.google.com https://*.googlesyndication.com https://*.doubleclick.net https://adservice.google.com https://adservice.google.co.in;
-  style-src 'self' 'unsafe-inline';
+  script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://*.google.com https://*.googlesyndication.com https://*.doubleclick.net https://adservice.google.com https://adservice.google.co.in https://tpc.googlesyndication.com;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   img-src 'self' data: blob: https:;
-  font-src 'self';
-  connect-src 'self' https://gofact-backend.onrender.com https://*.sanity.io https://*.google-analytics.com https://*.googlesyndication.com https://*.doubleclick.net https://pagead2.googlesyndication.com https://*.google.com;
-  frame-src https://*.google.com https://*.googlesyndication.com https://*.doubleclick.net https://googleads.g.doubleclick.net;
+  font-src 'self' data: https://fonts.gstatic.com;
+  connect-src 'self' https://gofact-backend.onrender.com https://*.sanity.io https://*.google-analytics.com https://*.googlesyndication.com https://*.doubleclick.net https://pagead2.googlesyndication.com https://*.google.com https://*.google.co.in https://*.adtrafficquality.google.com https://fundingchoicesmessages.google.com;
+  frame-src 'self' https://*.google.com https://*.googlesyndication.com https://*.doubleclick.net https://googleads.g.doubleclick.net https://fundingchoicesmessages.google.com;
   object-src 'none';
   base-uri 'self';
   form-action 'self';
@@ -16,6 +16,7 @@ const cspHeader = `
 const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
+  productionBrowserSourceMaps: true,
   images: {
     formats: ["image/avif", "image/webp"],
     deviceSizes: [360, 480, 640, 750, 828, 1080],

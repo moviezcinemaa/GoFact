@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
 import type { Article } from "@/types";
 
 function formatTime(dateStr: string | null): string {
@@ -33,11 +32,13 @@ const PLACEHOLDER_IMAGE =
 interface ArticleCardProps {
   article: Article;
   priority?: boolean;
+  fromQuery?: string;
 }
 
 export default function ArticleCard({
   article,
   priority = false,
+  fromQuery,
 }: ArticleCardProps) {
   const [imgError, setImgError] = useState(false);
   const summaryPreview = article.detailed_summary || article.ai_summary || "";
@@ -52,8 +53,6 @@ export default function ArticleCard({
       ? `/movies/${urlParam}`
       : `/article/${urlParam}`;
 
-  const searchParams = useSearchParams();
-  const fromQuery = searchParams.toString();
   const href = fromQuery
     ? `${linkPath}?from=${encodeURIComponent(fromQuery)}`
     : linkPath;
@@ -72,11 +71,11 @@ export default function ArticleCard({
             src={imageSrc}
             alt={article.original_headline || "Article thumbnail"}
             fill
-            sizes="(max-width: 600px) 380px, (max-width: 1024px) 360px, 340px"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 340px"
             style={{ objectFit: "cover" }}
             priority={priority}
-            loading={priority ? undefined : "lazy"}
-            quality={70}
+            loading={priority ? "eager" : "lazy"}
+            quality={65}
             onError={() => setImgError(true)}
             unoptimized={imageSrc.startsWith("data:")}
           />

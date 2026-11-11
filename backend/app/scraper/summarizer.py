@@ -21,17 +21,17 @@ logger = logging.getLogger(__name__)
 
 VALID_CATEGORIES = ["IPO", "Stocks", "Economy", "Global", "Crypto", "Commodities", "Finance", "Companies", "Indian Market"]
 
-SUMMARIZATION_PROMPT = """You are a senior financial news analyst writing for a professional financial news aggregation platform.
+SUMMARIZATION_PROMPT = """You are an expert financial analyst and journalist. I am providing you with multiple news reports from different sources about the exact same event. Synthesize these reports into a single, highly intelligent, insightful, and engaging summary (similar to the 'Inshorts' app style). Extract the most critical data points, provide context on why it matters to the market, and ensure the tone is premium and well-researched. Maximum length: 150 words.
 
-Given the following article headline and text, produce a JSON response with exactly three fields:
+Given the following article headline and reports text, produce a JSON response with exactly three fields:
 
-1. "detailed_summary": A highly detailed, professional financial summary. CRITICAL RULE: It MUST be exactly 3 robust paragraphs and strictly between 200 and 250 words. Write in a formal journalistic tone. Include relevant context about why this news matters, what led to it, and what it means for investors. Break complex topics into digestible insights. Do NOT use bullet points — write flowing paragraphs. Do NOT hallucinate or extrapolate from your pre-training knowledge. You will be provided with aggregated text from multiple news sources about this topic; synthesize all provided source text into a cohesive report.
+1. "detailed_summary": A synthesized, insightful financial summary (maximum length: 150 words).
 
 2. "category": Classify the article into EXACTLY ONE primary category from this list: "IPO", "Stocks", "Economy", "Global", "Crypto", "Commodities", "Finance", "Companies", "Indian Market". Choose the most dominant topic. 
 
 3. "tags": An array of up to 7 items. This MUST include:
    - Any relevant stock tickers, indices, or company names (e.g. "RELIANCE", "NIFTY50", "BTC").
-   - Any secondary categories the article falls into from the allowed list ("IPO", "Stocks", "Economy", "Global", "Crypto", "Commodities", "Finance", "Companies", "Indian Market"). For example, if an article is primarily about "Global" markets but heavily features Bitcoin, set category to "Global" and add "Crypto" to the tags array.
+   - Any secondary categories the article falls into from the allowed list ("IPO", "Stocks", "Economy", "Global", "Crypto", "Commodities", "Finance", "Companies", "Indian Market").
 
 Article headline: {headline}
 Article text: {text}
@@ -39,13 +39,14 @@ Article text: {text}
 Respond with ONLY valid JSON, no markdown formatting or code blocks. Example:
 {{"detailed_summary": "...", "category": "Stocks", "tags": ["RELIANCE", "NIFTY50"]}}"""
 
-SUMMARIZE_BATCH_PROMPT = """You are a senior financial news analyst.
+SUMMARIZE_BATCH_PROMPT = """You are an expert financial analyst and journalist. I am providing you with multiple news reports from different sources about the exact same event. Synthesize these reports into a single, highly intelligent, insightful, and engaging summary (similar to the 'Inshorts' app style). Extract the most critical data points, provide context on why it matters to the market, and ensure the tone is premium and well-researched. Maximum length: 150 words.
+
 You will be provided a JSON array of articles.
 For EACH article, produce exactly one summary object.
 
 Return a JSON array of objects, where each object corresponds to the input article in the exact same order.
 Each output object MUST have exactly these fields:
-1. "detailed_summary": exactly 3 paragraphs, 200-250 words. Do NOT hallucinate.
+1. "detailed_summary": The synthesized summary (maximum length: 150 words).
 2. "category": EXACTLY ONE of "IPO", "Stocks", "Economy", "Global", "Crypto", "Commodities", "Finance", "Companies", "Indian Market".
 3. "tags": Array of up to 7 items (tickers, secondary categories).
 

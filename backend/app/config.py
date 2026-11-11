@@ -15,7 +15,8 @@ class Settings(BaseSettings):
     openrouter_api_key: str = ""
 
     # Scraper & Cron
-    scrape_interval_minutes: int = 120  # Runs every 2 hours
+    max_articles_per_cycle: int = 20  # Hardcap: Curated Top 20 Daily Digest
+    scrape_interval_minutes: int = 1440  # Runs once daily (24 hours)
     cron_secret: str = "gofact-cron-secret-2026"  # X-CRON-KEY for external trigger endpoint
 
     # App

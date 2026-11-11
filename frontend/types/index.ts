@@ -42,3 +42,44 @@ export type Category =
   | "Indian Market"
   | "Movies";
 
+export interface FeedItem {
+  id: string;
+  title: string;
+  slug: string;
+  publishedAt: string;
+  imageUrl: string | null;
+  category: string;
+  type: "article" | "movie";
+  aiSummary: string | null;
+  detailedSummary: string | null;
+  sourceDomain: string;
+  imageSource: string | null;
+  tags: string[];
+  originalUrl?: string;
+  additionalSources?: { url: string; domain: string; headline: string }[] | null;
+}
+
+export function feedItemToArticle(item: FeedItem): Article {
+  return {
+    id: item.id,
+    original_headline: item.title,
+    original_url:
+      item.originalUrl ||
+      (item.type === "movie"
+        ? `/movies/${item.slug || item.id}`
+        : `/article/${item.slug || item.id}`),
+    source_domain: item.sourceDomain,
+    ai_summary: item.aiSummary,
+    market_impact: null,
+    published_at: item.publishedAt,
+    created_at: item.publishedAt,
+    image_url: item.imageUrl,
+    image_source: item.imageSource,
+    category: item.category,
+    tags: item.tags,
+    detailed_summary: item.detailedSummary,
+    additional_sources: item.additionalSources || null,
+    slug: item.slug,
+  };
+}
+

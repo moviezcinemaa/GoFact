@@ -50,6 +50,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://gofact-backend.onrender.com" />
+        <link rel="preconnect" href="https://cdn.sanity.io" />
+        <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+      </head>
       <body>
         <Suspense fallback={null}>
           <TopLoader />

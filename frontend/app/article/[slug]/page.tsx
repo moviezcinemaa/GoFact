@@ -7,8 +7,7 @@ import ArticleListItem from "@/components/ArticleListItem";
 import BackToFeed from "@/components/BackToFeed";
 import { notFound } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 86400; // 24-hour cache alignment
 export const dynamicParams = true;
 
 const API_BASE =
@@ -16,15 +15,17 @@ const API_BASE =
 
 export async function generateStaticParams() {
   try {
-    const res = await fetch(`${API_BASE}/api/articles?per_page=50`, {
-      cache: "no-store",
-      signal: AbortSignal.timeout(5000),
+    const res = await fetch(`${API_BASE}/api/articles?page=1&per_page=50`, {
+      next: { revalidate: 86400 },
+      signal: AbortSignal.timeout(15000),
     });
     if (!res.ok) return [];
     const data = await res.json();
-    return (data.articles || []).map((a: Article) => ({
-      slug: a.slug || a.id,
-    }));
+    return (data.articles || [])
+      .filter((a: Article) => Boolean(a.slug || a.id))
+      .map((a: Article) => ({
+        slug: a.slug || a.id,
+      }));
   } catch {
     return [];
   }
@@ -33,7 +34,7 @@ export async function generateStaticParams() {
 async function getArticle(slug: string): Promise<Article | null> {
   try {
     const res = await fetch(`${API_BASE}/api/articles/${slug}`, {
-      cache: "no-store",
+      next: { revalidate: 86400 },
       signal: AbortSignal.timeout(6000),
     });
     if (res.status === 404) return null;
