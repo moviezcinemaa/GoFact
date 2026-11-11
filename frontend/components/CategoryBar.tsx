@@ -4,13 +4,27 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Category } from "@/types";
 
+const DEFAULT_CATEGORIES: Category[] = [
+  "All",
+  "Stocks",
+  "IPO",
+  "Economy",
+  "Global",
+  "Crypto",
+  "Commodities",
+  "Finance",
+  "Companies",
+  "Indian Market",
+  "Movies",
+];
+
 interface CategoryBarProps {
   active: Category;
 }
 
 export default function CategoryBar({ active }: CategoryBarProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [categories, setCategories] = useState<Category[]>(["All"]);
+  const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
   const [loadingCategory, setLoadingCategory] = useState<Category | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -25,17 +39,19 @@ export default function CategoryBar({ active }: CategoryBarProps) {
     fetch(`${API_BASE}/api/categories`)
       .then((r) => r.json())
       .then((cats: string[]) => {
-        if (cats && cats.length > 0) {
-          const formatted = cats.map((c) => c as Category);
-          const finalCats: Category[] = ["All" as Category, ...formatted];
-          if (!finalCats.includes("Movies" as Category)) {
-            finalCats.push("Movies" as Category);
+        if (cats && Array.isArray(cats) && cats.length > 0) {
+          // Merge fetched categories with DEFAULT_CATEGORIES, preserving order
+          const merged = [...DEFAULT_CATEGORIES];
+          for (const c of cats) {
+            if (!merged.includes(c as Category)) {
+              merged.push(c as Category);
+            }
           }
-          setCategories(finalCats);
+          setCategories(merged);
         }
       })
       .catch(() => {
-        setCategories(["All", "Movies"] as Category[]);
+        setCategories(DEFAULT_CATEGORIES);
       });
   }, []);
 
