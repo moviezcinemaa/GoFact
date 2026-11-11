@@ -21,6 +21,25 @@ export default function TopLoader() {
     }
   }, [pathname, searchParams]);
 
+  // Permanently purge any Netlify badge element injected into the DOM
+  useEffect(() => {
+    const removeBadge = () => {
+      const el =
+        document.getElementById("netlify-badge") ||
+        document.querySelector("[data-netlify-badge]") ||
+        document.querySelector(".netlify-badge") ||
+        document.querySelector('iframe[src*="netlify"]');
+      if (el) el.remove();
+    };
+    removeBadge();
+    const observer = new MutationObserver(removeBadge);
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+    return () => observer.disconnect();
+  }, []);
+
   // Intercept link clicks to start progress bar instantly
   useEffect(() => {
     const handleDocumentClick = (e: MouseEvent) => {

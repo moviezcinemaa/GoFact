@@ -115,9 +115,14 @@ class Summarizer:
                 results = []
                 for item in data:
                     detailed = item.get("detailed_summary", "Summary unavailable.")
-                    category = item.get("category", "Economy")
-                    tags = item.get("tags", [])
-                    if not isinstance(tags, list): tags = []
+                    raw_cat = str(item.get("category", "Stocks")).strip()
+                    matched = next((c for c in VALID_CATEGORIES if c.lower() == raw_cat.lower()), None)
+                    category = matched or "Stocks"
+
+                    raw_tags = item.get("tags", [])
+                    if not isinstance(raw_tags, list):
+                        raw_tags = []
+                    tags = [str(t).upper().strip() for t in raw_tags[:7] if t]
                     
                     words = detailed.split()
                     ai_short = " ".join(words[:60]) + ("..." if len(words) > 60 else "")
@@ -360,9 +365,10 @@ class Summarizer:
             category = data.get("category", "")
             tags = data.get("tags", [])
 
-            # Validate category
-            if category not in VALID_CATEGORIES:
-                category = "Stocks"  # Safe default
+            # Validate category strictly against VALID_CATEGORIES
+            raw_cat = str(category).strip()
+            matched = next((c for c in VALID_CATEGORIES if c.lower() == raw_cat.lower()), None)
+            category = matched or "Stocks"
 
             # Validate tags — ensure list of strings, max 5
             if not isinstance(tags, list):

@@ -55,6 +55,20 @@ export default function RootLayout({
         <link rel="preconnect" href="https://cdn.sanity.io" />
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(() => {
+              const kill = () => {
+                const b = document.getElementById('netlify-badge') || document.querySelector('[data-netlify-badge]') || document.querySelector('.netlify-badge');
+                if (b) b.remove();
+              };
+              kill();
+              if (typeof MutationObserver !== 'undefined') {
+                new MutationObserver(kill).observe(document.documentElement, { childList: true, subtree: true });
+              }
+            })();`,
+          }}
+        />
       </head>
       <body>
         <Suspense fallback={null}>

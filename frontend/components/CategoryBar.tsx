@@ -20,40 +20,55 @@ const DEFAULT_CATEGORIES: Category[] = [
 
 interface CategoryBarProps {
   active: Category;
+  categories?: Category[];
 }
 
-export default function CategoryBar({ active }: CategoryBarProps) {
+export default function CategoryBar({
+  active,
+  categories: propCategories,
+}: CategoryBarProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
+  const [categories, setCategories] = useState<Category[]>(
+    propCategories && propCategories.length > 0
+      ? propCategories
+      : DEFAULT_CATEGORIES
+  );
   const [loadingCategory, setLoadingCategory] = useState<Category | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (propCategories && propCategories.length > 0) {
+      setCategories(propCategories);
+    }
+  }, [propCategories]);
 
   useEffect(() => {
     setLoadingCategory(null);
   }, [searchParams, active]);
 
   useEffect(() => {
+    // If categories were supplied by server feed, skip client fetch
+    if (propCategories && propCategories.length > 0) return;
+
     const API_BASE =
       process.env.NEXT_PUBLIC_API_URL || "https://gofact-backend.onrender.com";
     fetch(`${API_BASE}/api/categories`)
       .then((r) => r.json())
       .then((cats: string[]) => {
         if (cats && Array.isArray(cats) && cats.length > 0) {
-          // Merge fetched categories with DEFAULT_CATEGORIES, preserving order
-          const merged = [...DEFAULT_CATEGORIES];
-          for (const c of cats) {
-            if (!merged.includes(c as Category)) {
-              merged.push(c as Category);
-            }
-          }
+          const valid = cats.filter((c) =>
+            DEFAULT_CATEGORIES.includes(c as Category)
+          ) as Category[];
+          const merged = ["All" as Category, ...valid];
+          if (!merged.includes("Movies")) merged.push("Movies");
           setCategories(merged);
         }
       })
       .catch(() => {
         setCategories(DEFAULT_CATEGORIES);
       });
-  }, []);
+  }, [propCategories]);
 
   function handleChange(cat: Category) {
     if (cat === active && !searchParams.get("category") && cat === "All") return;

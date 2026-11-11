@@ -17,6 +17,8 @@ from app.config import get_settings
 from app.limiter import limiter
 from fastapi_cache.decorator import cache
 
+from app.scraper.summarizer import VALID_CATEGORIES
+
 router = APIRouter()
 settings = get_settings()
 
@@ -194,20 +196,22 @@ async def list_sources(db: AsyncSession = Depends(get_db)):
 
 @router.get("/categories", response_model=list[str])
 async def list_categories(db: AsyncSession = Depends(get_db)):
-    """Return distinct categories currently in the database."""
+    """Return distinct categories currently in the database, bound to VALID_CATEGORIES."""
     result = await db.execute(
         select(Article.category)
         .where(
             and_(
                 Article.category.is_not(None),
-                Article.category != ""
+                Article.category != "",
+                Article.category.in_(VALID_CATEGORIES),
+                Article.ai_summary.is_not(None)
             )
         )
         .distinct()
         .order_by(Article.category)
     )
     categories = result.scalars().all()
-    return [c for c in categories if c]
+    return [c for c in categories if c in VALID_CATEGORIES]
 
 
 @router.get("/sitemap.xml")

@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import type { Article, Category, FeedItem } from "@/types";
-import { feedItemToArticle } from "@/types";
+import {
+  feedItemToArticle,
+  MAJOR_CATEGORIES,
+  normalizeCategory,
+} from "@/types";
 import ArticleCard from "@/components/ArticleCard";
 import ArticleListItem from "@/components/ArticleListItem";
 import CategoryBar from "@/components/CategoryBar";
@@ -66,22 +70,25 @@ async function getUnifiedFeed(): Promise<FeedItem[]> {
     fetchSanityMovies(),
   ]);
 
-  const normalizedArticles: FeedItem[] = articles.map((a) => ({
-    id: a.id,
-    title: a.original_headline,
-    slug: a.slug || a.id,
-    publishedAt: a.published_at || a.created_at || new Date().toISOString(),
-    imageUrl: a.image_url,
-    category: a.category || "General",
-    type: "article",
-    aiSummary: a.ai_summary,
-    detailedSummary: a.detailed_summary,
-    sourceDomain: a.source_domain,
-    imageSource: a.image_source,
-    tags: a.tags || [],
-    originalUrl: a.original_url,
-    additionalSources: a.additional_sources,
-  }));
+  const normalizedArticles: FeedItem[] = articles.map((a) => {
+    const cat = normalizeCategory(a.category);
+    return {
+      id: a.id,
+      title: a.original_headline,
+      slug: a.slug || a.id,
+      publishedAt: a.published_at || a.created_at || new Date().toISOString(),
+      imageUrl: a.image_url,
+      category: cat,
+      type: "article",
+      aiSummary: a.ai_summary,
+      detailedSummary: a.detailed_summary,
+      sourceDomain: a.source_domain,
+      imageSource: a.image_source,
+      tags: a.tags || [],
+      originalUrl: a.original_url,
+      additionalSources: a.additional_sources,
+    };
+  });
 
   const normalizedMovies: FeedItem[] = movies.map((m: any) => ({
     id: m.slug?.current || m._id,
@@ -122,6 +129,17 @@ export default async function HomePage({ searchParams }: HomeProps) {
 
   // 1. Get the globally sorted timeline
   const unifiedFeed = await getUnifiedFeed();
+
+  // Dynamically compute only categories that currently have news articles/movies, strictly bound to the 10 major categories
+  const availableCategories = MAJOR_CATEGORIES.filter((cat) =>
+    unifiedFeed.some((item) =>
+      cat === "Movies"
+        ? item.type === "movie"
+        : item.type === "article" &&
+          (item.category === cat || item.tags?.includes(cat))
+    )
+  );
+  const dynamicCategories: Category[] = ["All", ...availableCategories];
 
   // 2. Apply category filtering
   let filtered = unifiedFeed;
@@ -187,7 +205,7 @@ export default async function HomePage({ searchParams }: HomeProps) {
       </Suspense>
 
       <Suspense fallback={null}>
-        <CategoryBar active={category} />
+        <CategoryBar active={category} categories={dynamicCategories} />
       </Suspense>
 
       {q && (

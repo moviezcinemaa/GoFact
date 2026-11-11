@@ -31,8 +31,8 @@ export interface SearchResponse {
 
 export type Category =
   | "All"
-  | "IPO"
   | "Stocks"
+  | "IPO"
   | "Economy"
   | "Global"
   | "Crypto"
@@ -41,6 +41,56 @@ export type Category =
   | "Companies"
   | "Indian Market"
   | "Movies";
+
+export const MAJOR_CATEGORIES: Category[] = [
+  "Stocks",
+  "IPO",
+  "Economy",
+  "Global",
+  "Crypto",
+  "Commodities",
+  "Finance",
+  "Companies",
+  "Indian Market",
+  "Movies",
+];
+
+const MAJOR_CATEGORY_SET = new Set<string>(MAJOR_CATEGORIES);
+
+export function normalizeCategory(cat: string | null | undefined): Category {
+  if (!cat) return "Stocks";
+  if (MAJOR_CATEGORY_SET.has(cat)) return cat as Category;
+  const lower = cat.toLowerCase();
+  if (
+    lower.includes("stock") ||
+    lower.includes("share") ||
+    lower.includes("equity") ||
+    lower.includes("polymarket") ||
+    lower.includes("softbank") ||
+    lower.includes("nvidia")
+  ) {
+    return "Stocks";
+  }
+  if (lower.includes("ipo")) return "IPO";
+  if (lower.includes("crypto") || lower.includes("bitcoin") || lower.includes("token")) return "Crypto";
+  if (
+    lower.includes("commodit") ||
+    lower.includes("gold") ||
+    lower.includes("silver") ||
+    lower.includes("oil") ||
+    lower.includes("metal") ||
+    lower.includes("aluminum")
+  ) {
+    return "Commodities";
+  }
+  if (lower.includes("econom") || lower.includes("fed") || lower.includes("inflation") || lower.includes("rate")) return "Economy";
+  if (lower.includes("global") || lower.includes("world")) return "Global";
+  if (lower.includes("india")) return "Indian Market";
+  if (lower.includes("compan") || lower.includes("corp")) return "Companies";
+  if (lower.includes("financ") || lower.includes("bank")) return "Finance";
+  if (lower.includes("movie") || lower.includes("cinema") || lower.includes("entertainment")) return "Movies";
+  return "Stocks";
+}
 
 export interface FeedItem {
   id: string;

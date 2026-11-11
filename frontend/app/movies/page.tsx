@@ -91,7 +91,7 @@ export default async function MoviesFeedPage({ searchParams }: MoviesFeedPagePro
       <p className="page-subheading">Entertainment & movie insights</p>
 
       <Suspense fallback={null}>
-        <CategoryBar active="Movies" />
+        <CategoryBar active="Movies" categories={["All", "Movies"]} />
       </Suspense>
 
       {currentPageItems.length === 0 ? (
