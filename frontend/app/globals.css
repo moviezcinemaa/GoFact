@@ -1887,3 +1887,16 @@ button.btn-loading,
     width: 100%;
   }
 }
+
+/* ─── Netlify Badge Suppression ──────────────────────────────── */
+#netlify-badge,
+.netlify-badge,
+[data-netlify-badge],
+div[id^="netlify-badge"],
+iframe[id^="netlify-badge"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
+
