@@ -36,6 +36,19 @@ class ArticleResponse(ArticleBase):
     model_config = {"from_attributes": True}
 
 
+# Existing Article schema alias
+Article = ArticleResponse
+
+
+class PaginatedArticlesResponse(BaseModel):
+    items: list[ArticleResponse]
+    total: int
+    page: int
+    size: int
+    total_pages: int
+    articles: Optional[list[ArticleResponse]] = None  # backwards compatibility alias
+
+
 class ArticleListResponse(BaseModel):
     articles: list[ArticleResponse]
     total: int

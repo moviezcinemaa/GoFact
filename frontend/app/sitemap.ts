@@ -26,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (res.ok) {
       const data = await res.json();
       const articles: Array<{ slug?: string; id: string; created_at: string }> =
-        data.articles || [];
+        data.items || data.articles || [];
 
       articleEntries = articles
         .filter((a) => a.slug || a.id)

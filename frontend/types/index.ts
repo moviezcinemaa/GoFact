@@ -16,11 +16,24 @@ export interface Article {
   slug?: string;
 }
 
-export interface ArticleListResponse {
-  articles: Article[];
+export interface PaginatedResponse<T> {
+  items: T[];
   total: number;
   page: number;
-  per_page: number;
+  size: number;
+  total_pages: number;
+}
+
+export type PaginatedArticlesResponse = PaginatedResponse<Article>;
+
+export interface ArticleListResponse {
+  items?: Article[];
+  articles?: Article[];
+  total: number;
+  page: number;
+  size?: number;
+  per_page?: number;
+  total_pages?: number;
 }
 
 export interface SearchResponse {

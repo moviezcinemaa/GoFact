@@ -12,6 +12,7 @@ import CategoryBar from "@/components/CategoryBar";
 import SearchBar from "@/components/SearchBar";
 import PaginationControls from "@/components/PaginationControls";
 import { sanityClient, urlFor } from "@/lib/sanity";
+import { fetchArticles } from "@/lib/api";
 
 // Netlify & Edge Cache Alignment: 24-hour static cache revalidation
 export const revalidate = 86400;
@@ -44,77 +45,22 @@ async function fetchSanityMovies(): Promise<any[]> {
   }
 }
 
-async function fetchArticlesFromBackend(): Promise<Article[]> {
+async function fetchActiveCategories(): Promise<Category[]> {
   try {
-    const path = `${API_BASE}/api/articles?page=1&per_page=100`;
-    const res = await fetch(path, {
+    const res = await fetch(`${API_BASE}/api/categories`, {
       next: { revalidate: 86400 },
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) throw new Error("API error");
-    const data = await res.json();
-    return data.articles || [];
+    const data: string[] = await res.json();
+    const valid = data.filter((c) =>
+      MAJOR_CATEGORIES.includes(c as Category)
+    ) as Category[];
+    if (!valid.includes("Movies")) valid.push("Movies");
+    return ["All", ...valid];
   } catch {
-    return [];
+    return ["All", ...MAJOR_CATEGORIES];
   }
-}
-
-/**
- * Phase 3: Unified Data Fetching & Global Timeline
- * Concurrently fetches from PostgreSQL (FastAPI) and Sanity CMS,
- * normalizes into the FeedItem interface, and strictly sorts by publishedAt descending.
- */
-async function getUnifiedFeed(): Promise<FeedItem[]> {
-  const [articles, movies] = await Promise.all([
-    fetchArticlesFromBackend(),
-    fetchSanityMovies(),
-  ]);
-
-  const normalizedArticles: FeedItem[] = articles.map((a) => {
-    const cat = normalizeCategory(a.category);
-    return {
-      id: a.id,
-      title: a.original_headline,
-      slug: a.slug || a.id,
-      publishedAt: a.published_at || a.created_at || new Date().toISOString(),
-      imageUrl: a.image_url,
-      category: cat,
-      type: "article",
-      aiSummary: a.ai_summary,
-      detailedSummary: a.detailed_summary,
-      sourceDomain: a.source_domain,
-      imageSource: a.image_source,
-      tags: a.tags || [],
-      originalUrl: a.original_url,
-      additionalSources: a.additional_sources,
-    };
-  });
-
-  const normalizedMovies: FeedItem[] = movies.map((m: any) => ({
-    id: m.slug?.current || m._id,
-    title: m.title,
-    slug: m.slug?.current || m._id,
-    publishedAt: m._createdAt || new Date().toISOString(),
-    imageUrl: m.poster ? urlFor(m.poster).width(800).url() : null,
-    category: "Movies",
-    type: "movie",
-    aiSummary: m.summaryPreview ? m.summaryPreview.substring(0, 150) + "..." : null,
-    detailedSummary: null,
-    sourceDomain: "GoFact Movies",
-    imageSource: null,
-    tags: ["Movies"],
-    originalUrl: `/movies/${m.slug?.current || m._id}`,
-  }));
-
-  // Global Timestamp Sort strictly by publishedAt in descending order (newest first)
-  const combined = [...normalizedArticles, ...normalizedMovies];
-  combined.sort((a, b) => {
-    const timeA = new Date(a.publishedAt).getTime();
-    const timeB = new Date(b.publishedAt).getTime();
-    return timeB - timeA;
-  });
-
-  return combined;
 }
 
 interface HomeProps {
@@ -127,36 +73,97 @@ export default async function HomePage({ searchParams }: HomeProps) {
   const category = (params.category as Category) || "All";
   const q = params.q || "";
 
-  // 1. Get the globally sorted timeline
-  const unifiedFeed = await getUnifiedFeed();
+  // 1. Fetch active categories for the filter bar (only non-empty categories)
+  const dynamicCategories = await fetchActiveCategories();
 
-  // Dynamically compute only categories that currently have news articles/movies, strictly bound to the 10 major categories
-  const availableCategories = MAJOR_CATEGORIES.filter((cat) =>
-    unifiedFeed.some((item) =>
-      cat === "Movies"
-        ? item.type === "movie"
-        : item.type === "article" &&
-          (item.category === cat || item.tags?.includes(cat))
-    )
-  );
-  const dynamicCategories: Category[] = ["All", ...availableCategories];
+  let currentPageItems: FeedItem[] = [];
+  let total = 0;
+  let total_pages = 1;
 
-  // 2. Apply category filtering
-  let filtered = unifiedFeed;
   if (category === "Movies") {
-    filtered = filtered.filter((item) => item.type === "movie");
-  } else if (category !== "All") {
-    filtered = filtered.filter(
-      (item) =>
-        item.type === "article" &&
-        (item.category === category || item.tags?.includes(category))
+    const allMovies = await fetchSanityMovies();
+    const normalizedMovies: FeedItem[] = allMovies.map((m: any) => ({
+      id: m.slug?.current || m._id,
+      title: m.title,
+      slug: m.slug?.current || m._id,
+      publishedAt: m._createdAt || new Date().toISOString(),
+      imageUrl: m.poster ? urlFor(m.poster).width(800).url() : null,
+      category: "Movies",
+      type: "movie",
+      aiSummary: m.summaryPreview ? m.summaryPreview.substring(0, 150) + "..." : null,
+      detailedSummary: null,
+      sourceDomain: "GoFact Movies",
+      imageSource: null,
+      tags: ["Movies"],
+      originalUrl: `/movies/${m.slug?.current || m._id}`,
+    }));
+
+    total = normalizedMovies.length;
+    total_pages = Math.max(1, Math.ceil(total / PER_PAGE));
+    const startIndex = (page - 1) * PER_PAGE;
+    currentPageItems = normalizedMovies.slice(startIndex, startIndex + PER_PAGE);
+  } else {
+    // Server-side paginated fetch from FastAPI backend
+    const paginated = await fetchArticles(
+      page,
+      PER_PAGE,
+      category !== "All" ? category : undefined
     );
+
+    const normalizedArticles: FeedItem[] = (paginated.items || []).map((a) => {
+      const cat = normalizeCategory(a.category);
+      return {
+        id: a.id,
+        title: a.original_headline,
+        slug: a.slug || a.id,
+        publishedAt: a.published_at || a.created_at || new Date().toISOString(),
+        imageUrl: a.image_url,
+        category: cat,
+        type: "article",
+        aiSummary: a.ai_summary,
+        detailedSummary: a.detailed_summary,
+        sourceDomain: a.source_domain,
+        imageSource: a.image_source,
+        tags: a.tags || [],
+        originalUrl: a.original_url,
+        additionalSources: a.additional_sources,
+      };
+    });
+
+    let combined = normalizedArticles;
+    // On page 1 of All, also interleave latest movie news if available
+    if (page === 1 && category === "All") {
+      const movies = await fetchSanityMovies();
+      const normalizedMovies: FeedItem[] = movies.map((m: any) => ({
+        id: m.slug?.current || m._id,
+        title: m.title,
+        slug: m.slug?.current || m._id,
+        publishedAt: m._createdAt || new Date().toISOString(),
+        imageUrl: m.poster ? urlFor(m.poster).width(800).url() : null,
+        category: "Movies",
+        type: "movie",
+        aiSummary: m.summaryPreview ? m.summaryPreview.substring(0, 150) + "..." : null,
+        detailedSummary: null,
+        sourceDomain: "GoFact Movies",
+        imageSource: null,
+        tags: ["Movies"],
+        originalUrl: `/movies/${m.slug?.current || m._id}`,
+      }));
+      combined = [...normalizedArticles, ...normalizedMovies];
+      combined.sort(
+        (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+      );
+    }
+
+    currentPageItems = combined;
+    total = paginated.total;
+    total_pages = Math.max(1, paginated.total_pages);
   }
 
-  // 3. Apply search query filtering if requested
+  // Filter by search query if provided
   if (q) {
     const ql = q.toLowerCase();
-    filtered = filtered.filter(
+    currentPageItems = currentPageItems.filter(
       (item) =>
         item.title.toLowerCase().includes(ql) ||
         item.aiSummary?.toLowerCase().includes(ql) ||
@@ -164,27 +171,14 @@ export default async function HomePage({ searchParams }: HomeProps) {
     );
   }
 
-  const total = filtered.length;
-  const totalPages = Math.ceil(total / PER_PAGE);
-
   const queryObj: Record<string, string> = {};
   if (params.page) queryObj.page = params.page;
   if (params.category) queryObj.category = params.category;
   if (params.q) queryObj.q = params.q;
   const fromQuery = new URLSearchParams(queryObj).toString();
 
-  /**
-   * Phase 4: Page-Level Image Sorting Algorithm
-   * 1. Slicing happens FIRST from the global chronological timeline
-   *    (prevents old articles from jumping to page 1).
-   * 2. Image Anchoring: Shift items with valid imageUrl to the top,
-   *    and items without image to the bottom.
-   * 3. Preserve Chronology within Groups: Both groups strictly sorted by publishedAt descending.
-   */
-  const startIndex = (page - 1) * PER_PAGE;
-  const endIndex = startIndex + PER_PAGE;
-  const currentPageItems = filtered.slice(startIndex, endIndex);
-
+  // Page-Level Image Sorting Algorithm:
+  // Anchors items with images to top, without images to bottom, strictly chronological within groups
   const withImage = currentPageItems
     .filter((item) => Boolean(item.imageUrl))
     .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
@@ -266,11 +260,12 @@ export default async function HomePage({ searchParams }: HomeProps) {
             </div>
           )}
 
-          {totalPages > 1 && (
+          {total_pages > 1 && (
             <Suspense fallback={null}>
               <PaginationControls
                 page={page}
-                totalPages={totalPages}
+                total_pages={total_pages}
+                totalPages={total_pages}
                 category={category}
                 q={q}
               />

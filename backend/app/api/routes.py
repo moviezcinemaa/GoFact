@@ -1,3 +1,4 @@
+import math
 from datetime import datetime, timezone
 from uuid import UUID
 from typing import Optional
@@ -10,6 +11,7 @@ from app.models import Article
 from app.schemas import (
     ArticleResponse,
     ArticleListResponse,
+    PaginatedArticlesResponse,
     SearchResponse,
     HealthResponse,
 )
@@ -33,25 +35,26 @@ async def health_check():
     )
 
 
-@router.get("/articles", response_model=ArticleListResponse)
+@router.get("/articles", response_model=PaginatedArticlesResponse)
 @limiter.limit("100/minute")
 @cache(expire=300)
 async def list_articles(
     request: Request,
     page: int = Query(1, ge=1),
-    per_page: int = Query(20, ge=1, le=500),
+    limit: Optional[int] = Query(None, ge=1, le=500),
+    size: Optional[int] = Query(None, ge=1, le=500),
+    per_page: Optional[int] = Query(None, ge=1, le=500),
     source: Optional[str] = Query(None),
     category: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
-    """List articles with optional category and source filtering."""
-    offset = (page - 1) * per_page
+    """List articles with server-side pagination metadata, ordered by created_at descending."""
+    page_size = limit or per_page or size or 20
+    skip = (page - 1) * page_size
 
-    query = select(Article).where(Article.ai_summary.is_not(None)).order_by(desc(Article.published_at))
     count_query = select(func.count(Article.id)).where(Article.ai_summary.is_not(None))
 
     if source:
-        query = query.where(Article.source_domain == source)
         count_query = count_query.where(Article.source_domain == source)
 
     if category:
@@ -59,20 +62,36 @@ async def list_articles(
             Article.category == category,
             Article.tags.any(category)
         )
-        query = query.where(category_condition)
         count_query = count_query.where(category_condition)
 
     total_result = await db.execute(count_query)
-    total = total_result.scalar() or 0
+    total_count = total_result.scalar() or 0
 
-    result = await db.execute(query.offset(offset).limit(per_page))
+    total_pages = math.ceil(total_count / page_size) if page_size > 0 else 0
+
+    query = (
+        select(Article)
+        .where(Article.ai_summary.is_not(None))
+        .order_by(desc(Article.created_at))
+    )
+
+    if source:
+        query = query.where(Article.source_domain == source)
+
+    if category:
+        query = query.where(category_condition)
+
+    result = await db.execute(query.offset(skip).limit(page_size))
     articles = result.scalars().all()
+    items = [ArticleResponse.model_validate(a) for a in articles]
 
-    return ArticleListResponse(
-        articles=[ArticleResponse.model_validate(a) for a in articles],
-        total=total,
+    return PaginatedArticlesResponse(
+        items=items,
+        total=total_count,
         page=page,
-        per_page=per_page,
+        size=page_size,
+        total_pages=total_pages,
+        articles=items,
     )
 
 

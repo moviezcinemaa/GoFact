@@ -48,8 +48,8 @@ export default function CategoryBar({
   }, [searchParams, active]);
 
   useEffect(() => {
-    // If categories were supplied by server feed, skip client fetch
-    if (propCategories && propCategories.length > 0) return;
+    // If rich active categories were supplied by server feed (> 2 categories), skip client fetch
+    if (propCategories && propCategories.length > 2) return;
 
     const API_BASE =
       process.env.NEXT_PUBLIC_API_URL || "https://gofact-backend.onrender.com";

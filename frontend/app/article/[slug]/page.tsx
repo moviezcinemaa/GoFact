@@ -21,7 +21,7 @@ export async function generateStaticParams() {
     });
     if (!res.ok) return [];
     const data = await res.json();
-    return (data.articles || [])
+    return (data.items || data.articles || [])
       .filter((a: Article) => Boolean(a.slug || a.id))
       .map((a: Article) => ({
         slug: a.slug || a.id,

@@ -5,22 +5,26 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 interface PaginationControlsProps {
   page: number;
-  totalPages: number;
-  category: string;
-  q: string;
+  total_pages?: number;
+  totalPages?: number;
+  category?: string;
+  q?: string;
 }
 
 export default function PaginationControls({
   page,
+  total_pages,
   totalPages,
-  category,
-  q,
+  category = "All",
+  q = "",
 }: PaginationControlsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [navigatingDir, setNavigatingDir] = useState<"prev" | "next" | null>(
     null
   );
+
+  const pagesCount = total_pages ?? totalPages ?? 1;
 
   useEffect(() => {
     setNavigatingDir(null);
@@ -41,6 +45,8 @@ export default function PaginationControls({
   }
 
   const isLoading = Boolean(navigatingDir);
+
+  if (pagesCount <= 1) return null;
 
   return (
     <div className="pagination">
@@ -64,10 +70,10 @@ export default function PaginationControls({
       )}
 
       <span className="page-info">
-        Page {page} of {totalPages}
+        Page {page} of {pagesCount}
       </span>
 
-      {page >= totalPages ? (
+      {page >= pagesCount ? (
         <button disabled>Next</button>
       ) : (
         <button
