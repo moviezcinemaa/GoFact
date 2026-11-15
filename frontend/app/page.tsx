@@ -29,6 +29,8 @@ const API_BASE =
 
 const PER_PAGE = 18;
 
+// ─── Shared helpers ─────────────────────────────────────────
+
 async function fetchSanityMovies(): Promise<any[]> {
   try {
     const moviesQuery = `*[_type == "movieNews"] | order(_createdAt desc) {
@@ -43,6 +45,56 @@ async function fetchSanityMovies(): Promise<any[]> {
   } catch {
     return [];
   }
+}
+
+/** Normalize a raw Sanity movie document into a FeedItem. */
+function normalizeSanityMovie(m: any): FeedItem {
+  return {
+    id: m.slug?.current || m._id,
+    title: m.title,
+    slug: m.slug?.current || m._id,
+    publishedAt: m._createdAt || new Date().toISOString(),
+    imageUrl: m.poster ? urlFor(m.poster).width(800).url() : null,
+    category: "Movies",
+    type: "movie",
+    aiSummary: m.summaryPreview
+      ? m.summaryPreview.substring(0, 150) + "..."
+      : null,
+    detailedSummary: null,
+    sourceDomain: "GoFact Movies",
+    imageSource: null,
+    tags: ["Movies"],
+    originalUrl: `/movies/${m.slug?.current || m._id}`,
+  };
+}
+
+/** Normalize a FastAPI Article into a FeedItem. */
+function normalizeArticle(a: Article): FeedItem {
+  const cat = normalizeCategory(a.category);
+  return {
+    id: a.id,
+    title: a.original_headline,
+    slug: a.slug || a.id,
+    publishedAt: a.published_at || a.created_at || new Date().toISOString(),
+    imageUrl: a.image_url,
+    category: cat,
+    type: "article",
+    aiSummary: a.ai_summary,
+    detailedSummary: a.detailed_summary,
+    sourceDomain: a.source_domain,
+    imageSource: a.image_source,
+    tags: a.tags || [],
+    originalUrl: a.original_url,
+    additionalSources: a.additional_sources,
+  };
+}
+
+/** Sort FeedItems by publishedAt descending (newest first). */
+function chronoSort(items: FeedItem[]): FeedItem[] {
+  return items.sort(
+    (a, b) =>
+      new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+  );
 }
 
 async function fetchActiveCategories(): Promise<Category[]> {
@@ -63,6 +115,8 @@ async function fetchActiveCategories(): Promise<Category[]> {
   }
 }
 
+// ─── Page component ─────────────────────────────────────────
+
 interface HomeProps {
   searchParams: Promise<{ page?: string; category?: string; q?: string }>;
 }
@@ -81,81 +135,36 @@ export default async function HomePage({ searchParams }: HomeProps) {
   let total_pages = 1;
 
   if (category === "Movies") {
+    // ── Movies-only view: paginate Sanity movies client-side ──
     const allMovies = await fetchSanityMovies();
-    const normalizedMovies: FeedItem[] = allMovies.map((m: any) => ({
-      id: m.slug?.current || m._id,
-      title: m.title,
-      slug: m.slug?.current || m._id,
-      publishedAt: m._createdAt || new Date().toISOString(),
-      imageUrl: m.poster ? urlFor(m.poster).width(800).url() : null,
-      category: "Movies",
-      type: "movie",
-      aiSummary: m.summaryPreview ? m.summaryPreview.substring(0, 150) + "..." : null,
-      detailedSummary: null,
-      sourceDomain: "GoFact Movies",
-      imageSource: null,
-      tags: ["Movies"],
-      originalUrl: `/movies/${m.slug?.current || m._id}`,
-    }));
+    const normalizedMovies = allMovies.map(normalizeSanityMovie);
 
     total = normalizedMovies.length;
     total_pages = Math.max(1, Math.ceil(total / PER_PAGE));
     const startIndex = (page - 1) * PER_PAGE;
     currentPageItems = normalizedMovies.slice(startIndex, startIndex + PER_PAGE);
+  } else if (category === "All") {
+    // ── Unified "All" feed: merge both sources, sort globally, paginate client-side ──
+    const [paginated, rawMovies] = await Promise.all([
+      fetchArticles(1, 500), // fetch all articles in one shot for unified sorting
+      fetchSanityMovies(),
+    ]);
+
+    const normalizedArticles = (paginated.items || []).map(normalizeArticle);
+    const normalizedMovies = rawMovies.map(normalizeSanityMovie);
+
+    // Single unified timeline — every item treated equally by timestamp
+    const unified = chronoSort([...normalizedArticles, ...normalizedMovies]);
+
+    total = unified.length;
+    total_pages = Math.max(1, Math.ceil(total / PER_PAGE));
+    const startIndex = (page - 1) * PER_PAGE;
+    currentPageItems = unified.slice(startIndex, startIndex + PER_PAGE);
   } else {
-    // Server-side paginated fetch from FastAPI backend
-    const paginated = await fetchArticles(
-      page,
-      PER_PAGE,
-      category !== "All" ? category : undefined
-    );
+    // ── Category-filtered view: server-side pagination from FastAPI only ──
+    const paginated = await fetchArticles(page, PER_PAGE, category);
 
-    const normalizedArticles: FeedItem[] = (paginated.items || []).map((a) => {
-      const cat = normalizeCategory(a.category);
-      return {
-        id: a.id,
-        title: a.original_headline,
-        slug: a.slug || a.id,
-        publishedAt: a.published_at || a.created_at || new Date().toISOString(),
-        imageUrl: a.image_url,
-        category: cat,
-        type: "article",
-        aiSummary: a.ai_summary,
-        detailedSummary: a.detailed_summary,
-        sourceDomain: a.source_domain,
-        imageSource: a.image_source,
-        tags: a.tags || [],
-        originalUrl: a.original_url,
-        additionalSources: a.additional_sources,
-      };
-    });
-
-    let combined = normalizedArticles;
-    // On page 1 of All, also interleave latest movie news if available
-    if (page === 1 && category === "All") {
-      const movies = await fetchSanityMovies();
-      const normalizedMovies: FeedItem[] = movies.map((m: any) => ({
-        id: m.slug?.current || m._id,
-        title: m.title,
-        slug: m.slug?.current || m._id,
-        publishedAt: m._createdAt || new Date().toISOString(),
-        imageUrl: m.poster ? urlFor(m.poster).width(800).url() : null,
-        category: "Movies",
-        type: "movie",
-        aiSummary: m.summaryPreview ? m.summaryPreview.substring(0, 150) + "..." : null,
-        detailedSummary: null,
-        sourceDomain: "GoFact Movies",
-        imageSource: null,
-        tags: ["Movies"],
-        originalUrl: `/movies/${m.slug?.current || m._id}`,
-      }));
-      combined = [...normalizedArticles, ...normalizedMovies];
-      combined.sort(
-        (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-      );
-    }
-
-    currentPageItems = combined;
+    currentPageItems = (paginated.items || []).map(normalizeArticle);
     total = paginated.total;
     total_pages = Math.max(1, paginated.total_pages);
   }
