@@ -4,12 +4,15 @@ import Script from "next/script";
 
 export default function MonetagScript() {
   return (
-    <Script
-      id="monetag-popunder"
-      src="https://al5sm.com/tag.min.js"
-      data-zone="12303444"
-      strategy="afterInteractive"
-      data-cfasync="false"
-    />
+    <>
+      {/* Monetag MultiTag (All-in-One: Popunder, Vignette Interstitial, and In-Page Push) */}
+      <Script
+        id="monetag-multitag"
+        src="https://quge5.com/88/tag.min.js"
+        data-zone="312669"
+        strategy="afterInteractive"
+        data-cfasync="false"
+      />
+    </>
   );
 }
