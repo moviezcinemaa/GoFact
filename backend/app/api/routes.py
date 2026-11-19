@@ -96,7 +96,7 @@ async def list_articles(
 
 
 @router.get("/articles/{article_id}", response_model=ArticleResponse)
-@limiter.limit("60/minute")
+@limiter.limit("300/minute")
 @cache(expire=3600)
 async def get_article(request: Request, article_id: str, db: AsyncSession = Depends(get_db)):
     try:
@@ -112,7 +112,7 @@ async def get_article(request: Request, article_id: str, db: AsyncSession = Depe
 
 
 @router.get("/articles/{article_id}/related", response_model=list[ArticleResponse])
-@limiter.limit("60/minute")
+@limiter.limit("300/minute")
 @cache(expire=3600)
 async def get_related_articles(
     request: Request,

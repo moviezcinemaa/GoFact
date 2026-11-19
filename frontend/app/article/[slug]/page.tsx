@@ -31,25 +31,29 @@ export async function generateStaticParams() {
   }
 }
 
+/**
+ * Fetch an article by slug.
+ * Returns the Article on success, null on a genuine 404.
+ * THROWS on network/timeout errors so Next.js renders a 500 (retryable by Google)
+ * instead of a 404 with noindex that permanently de-indexes the page.
+ */
 async function getArticle(slug: string): Promise<Article | null> {
-  try {
-    const res = await fetch(`${API_BASE}/api/articles/${slug}`, {
-      next: { revalidate: 86400 },
-      signal: AbortSignal.timeout(6000),
-    });
-    if (res.status === 404) return null;
-    if (!res.ok) throw new Error("API error");
-    return res.json();
-  } catch {
-    return null;
+  const res = await fetch(`${API_BASE}/api/articles/${slug}`, {
+    next: { revalidate: 86400 },
+    signal: AbortSignal.timeout(30000), // 30s — enough for Render free-tier cold start
+  });
+  if (res.status === 404) return null; // genuine 404 — article does not exist
+  if (!res.ok) {
+    throw new Error(`Backend returned ${res.status} for /api/articles/${slug}`);
   }
+  return res.json();
 }
 
 async function getRelated(slug: string): Promise<Article[]> {
   try {
     const res = await fetch(`${API_BASE}/api/articles/${slug}/related`, {
       next: { revalidate: 3600 },
-      signal: AbortSignal.timeout(3500),
+      signal: AbortSignal.timeout(15000),
     });
     if (!res.ok) return [];
     return res.json();
