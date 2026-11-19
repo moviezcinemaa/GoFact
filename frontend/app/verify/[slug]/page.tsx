@@ -5,7 +5,6 @@ import Link from "next/link";
 import { PortableText } from "@portabletext/react";
 import { sanityClient, urlFor } from "@/lib/sanity";
 import type { MovieNews } from "@/types/sanity";
-import MonetagScript from "@/components/MonetagScript";
 
 interface VerifyPageProps {
   params: Promise<{ slug: string }>;
@@ -83,7 +82,6 @@ export default function VerifyPage({ params }: VerifyPageProps) {
 
   return (
     <section className="verify-page" style={{ maxWidth: "760px", margin: "0 auto" }}>
-      <MonetagScript />
       <h1 className="verify-title" style={{ fontFamily: "Georgia, serif", fontSize: "26px", marginBottom: "20px" }}>
         {movie.title}
       </h1>

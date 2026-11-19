@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import Script from "next/script";
 import TopLoader from "@/components/TopLoader";
 import AdSenseScript from "@/components/AdSenseScript";
+import MonetagScript from "@/components/MonetagScript";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://gofact.in"),
@@ -82,6 +83,8 @@ export default function RootLayout({
         </div>
         {/* Google AdSense (conditionally rendered only on non-funnel routes) */}
         <AdSenseScript />
+        {/* Monetag MultiTag (conditionally rendered only on movie & funnel routes) */}
+        <MonetagScript />
         {/* Google Analytics */}
         <Script
           async
