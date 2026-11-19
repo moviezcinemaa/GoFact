@@ -45,7 +45,7 @@ export async function generateMetadata({
     const posterUrl = movie.poster ? urlFor(movie.poster).width(800).url() : "";
 
     return {
-      title: `${movie.title} | GoFact`,
+      title: movie.title,
       description,
       alternates: { canonical: `https://gofact.in/movies/${slug}` },
       openGraph: {

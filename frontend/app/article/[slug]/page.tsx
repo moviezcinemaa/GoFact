@@ -78,7 +78,7 @@ export async function generateMetadata({
   const canonicalUrl = `https://gofact.in/article/${article.slug || article.id}`;
 
   return {
-    title: `${article.original_headline} | GoFact`,
+    title: article.original_headline,
     description,
     alternates: { canonical: canonicalUrl },
     openGraph: {

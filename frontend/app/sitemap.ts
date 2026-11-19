@@ -19,14 +19,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let articleEntries: MetadataRoute.Sitemap = [];
   try {
-    const res = await fetch(
-      `${API_BASE}/api/articles?page=1&per_page=500`,
-      { next: { revalidate: 86400 }, signal: AbortSignal.timeout(10000) }
-    );
+    // Attempt lightweight sitemap endpoint first (returns only slug, id, created_at)
+    let res = await fetch(`${API_BASE}/api/articles-sitemap`, {
+      next: { revalidate: 86400 },
+      signal: AbortSignal.timeout(10000),
+    });
+
+    // Fallback if articles-sitemap is not yet deployed on backend
+    if (!res.ok) {
+      res = await fetch(`${API_BASE}/api/articles?page=1&per_page=100`, {
+        next: { revalidate: 86400 },
+        signal: AbortSignal.timeout(10000),
+      });
+    }
+
     if (res.ok) {
       const data = await res.json();
       const articles: Array<{ slug?: string; id: string; created_at: string }> =
-        data.items || data.articles || [];
+        Array.isArray(data) ? data : data.items || data.articles || [];
 
       articleEntries = articles
         .filter((a) => a.slug || a.id)

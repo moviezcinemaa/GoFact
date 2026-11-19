@@ -144,22 +144,41 @@ export default async function HomePage({ searchParams }: HomeProps) {
     const startIndex = (page - 1) * PER_PAGE;
     currentPageItems = normalizedMovies.slice(startIndex, startIndex + PER_PAGE);
   } else if (category === "All") {
-    // ── Unified "All" feed: merge both sources, sort globally, paginate client-side ──
+    // ── Unified "All" feed: merge articles and movies, chronologically sorted ──
     const [paginated, rawMovies] = await Promise.all([
-      fetchArticles(1, 500), // fetch all articles in one shot for unified sorting
+      fetchArticles(page, PER_PAGE),
       fetchSanityMovies(),
     ]);
 
     const normalizedArticles = (paginated.items || []).map(normalizeArticle);
     const normalizedMovies = rawMovies.map(normalizeSanityMovie);
 
-    // Single unified timeline — every item treated equally by timestamp
-    const unified = chronoSort([...normalizedArticles, ...normalizedMovies]);
+    // Interleave movies that fall within the current page's time window
+    const oldestArticleTime =
+      normalizedArticles.length > 0
+        ? new Date(
+            normalizedArticles[normalizedArticles.length - 1].publishedAt
+          ).getTime()
+        : 0;
+    const newestArticleTime =
+      normalizedArticles.length > 0
+        ? new Date(normalizedArticles[0].publishedAt).getTime()
+        : Infinity;
 
-    total = unified.length;
+    const pageMovies = normalizedMovies.filter((m) => {
+      const mTime = new Date(m.publishedAt).getTime();
+      if (page === 1) {
+        return mTime >= oldestArticleTime;
+      }
+      return mTime <= newestArticleTime && mTime >= oldestArticleTime;
+    });
+
+    // Single unified chronological timeline for the page
+    const unified = chronoSort([...normalizedArticles, ...pageMovies]);
+
+    currentPageItems = unified.slice(0, PER_PAGE);
+    total = paginated.total + normalizedMovies.length;
     total_pages = Math.max(1, Math.ceil(total / PER_PAGE));
-    const startIndex = (page - 1) * PER_PAGE;
-    currentPageItems = unified.slice(startIndex, startIndex + PER_PAGE);
   } else {
     // ── Category-filtered view: server-side pagination from FastAPI only ──
     const paginated = await fetchArticles(page, PER_PAGE, category);

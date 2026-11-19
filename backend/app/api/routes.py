@@ -213,6 +213,28 @@ async def list_sources(db: AsyncSession = Depends(get_db)):
     return result.scalars().all()
 
 
+@router.get("/articles-sitemap")
+@cache(expire=3600)
+async def get_articles_for_sitemap(db: AsyncSession = Depends(get_db)):
+    """Lightweight endpoint returning only slug, id, and created_at for sitemap generation."""
+    result = await db.execute(
+        select(Article.slug, Article.id, Article.created_at)
+        .where(Article.ai_summary.is_not(None))
+        .order_by(desc(Article.created_at))
+        .limit(2000)
+    )
+    rows = result.all()
+    now_iso = datetime.now(timezone.utc).isoformat()
+    return [
+        {
+            "slug": row[0],
+            "id": str(row[1]),
+            "created_at": row[2].isoformat() if row[2] else now_iso,
+        }
+        for row in rows
+    ]
+
+
 @router.get("/categories", response_model=list[str])
 async def list_categories(db: AsyncSession = Depends(get_db)):
     """Return distinct categories currently in the database, bound to VALID_CATEGORIES."""
