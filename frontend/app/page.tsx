@@ -14,8 +14,8 @@ import PaginationControls from "@/components/PaginationControls";
 import { sanityClient, urlFor } from "@/lib/sanity";
 import { fetchArticles } from "@/lib/api";
 
-// Netlify & Edge Cache Alignment: 24-hour static cache revalidation
-export const revalidate = 86400;
+// Revalidate feed every 5 minutes to keep page offsets synchronized with the database
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "GoFact | Global Financial Intelligence & Real-Time Market News",

@@ -31,8 +31,8 @@ export async function fetchArticles(
   }
 
   const res = await fetch(`${API_BASE}/api/articles?${params.toString()}`, {
-    next: { revalidate: 86400 },
-    signal: AbortSignal.timeout(8000),
+    next: { revalidate: 300 },
+    signal: AbortSignal.timeout(15000),
   });
 
   if (!res.ok) {

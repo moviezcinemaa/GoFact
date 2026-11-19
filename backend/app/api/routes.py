@@ -72,7 +72,7 @@ async def list_articles(
     query = (
         select(Article)
         .where(Article.ai_summary.is_not(None))
-        .order_by(desc(Article.created_at))
+        .order_by(desc(func.coalesce(Article.published_at, Article.created_at)))
     )
 
     if source:
@@ -220,7 +220,7 @@ async def get_articles_for_sitemap(db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(Article.slug, Article.id, Article.created_at)
         .where(Article.ai_summary.is_not(None))
-        .order_by(desc(Article.created_at))
+        .order_by(desc(func.coalesce(Article.published_at, Article.created_at)))
         .limit(2000)
     )
     rows = result.all()
