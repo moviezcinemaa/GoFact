@@ -6,6 +6,7 @@ import { PortableText } from "@portabletext/react";
 import { sanityClient, urlFor } from "@/lib/sanity";
 import type { MovieNews } from "@/types/sanity";
 import BackToFeed from "@/components/BackToFeed";
+import MonetagScript from "@/components/MonetagScript";
 
 interface MoviePageProps {
   params: Promise<{ slug: string }>;
@@ -92,6 +93,7 @@ export default async function MovieEntryPage({
 
   return (
     <section className="movie-entry">
+      <MonetagScript />
       <BackToFeed fromParam={fromParam} category="Movies" />
 
       <h1 className="movie-entry-title" style={{ fontFamily: "Georgia, serif", fontSize: "28px", margin: "16px 0" }}>

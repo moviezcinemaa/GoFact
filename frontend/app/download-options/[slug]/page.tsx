@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PortableText } from "@portabletext/react";
 import { sanityClient, urlFor } from "@/lib/sanity";
 import type { MovieNews } from "@/types/sanity";
+import MonetagScript from "@/components/MonetagScript";
 
 interface DownloadOptionsProps {
   params: Promise<{ slug: string }>;
@@ -57,6 +58,7 @@ export default function DownloadOptionsPage({ params }: DownloadOptionsProps) {
 
   return (
     <section className="download-page">
+      <MonetagScript />
       <h1 className="download-title">{movie.title}</h1>
       <p className="download-subtitle">Select Community Resource</p>
 
