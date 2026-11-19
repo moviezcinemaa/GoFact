@@ -13,7 +13,7 @@ interface MoviePageProps {
   searchParams?: Promise<{ from?: string }>;
 }
 
-export const revalidate = 86400; // 24-hour cache alignment
+export const revalidate = 300; // 5-minute cache alignment
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
