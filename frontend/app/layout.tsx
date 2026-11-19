@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Script from "next/script";
 import TopLoader from "@/components/TopLoader";
+import AdSenseScript from "@/components/AdSenseScript";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://gofact.in"),
@@ -79,13 +80,8 @@ export default function RootLayout({
           <main className="site-main">{children}</main>
           <Footer />
         </div>
-        {/* Google AdSense */}
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5744613008467521"
-          crossOrigin="anonymous"
-          strategy="lazyOnload"
-        />
+        {/* Google AdSense (conditionally rendered only on non-funnel routes) */}
+        <AdSenseScript />
         {/* Google Analytics */}
         <Script
           async

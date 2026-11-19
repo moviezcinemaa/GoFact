@@ -1,9 +1,14 @@
 User-agent: Mediapartners-Google
-Allow: /
+Disallow: /verify/
+Disallow: /download-options/
+Disallow: /movies/
 
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /_next/
 Disallow: /verify/
 Disallow: /download-options/
+Disallow: /movies/
 
 Sitemap: https://gofact.in/sitemap.xml
